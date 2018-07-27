@@ -29,6 +29,11 @@ alias gwnd="./gradlew --no-daemon"
 alias gitpush='git push || $(git push 2>&1 | grep "git push --set-upstream")'
 _done
 
+#UMASK
+_start "Setting umask"
+umask 022
+_done
+
 # MEMOIZED PROFILE
 if [ -e ~/.profile.memoized ]; then
   _start "Loading Memoized Environment"
