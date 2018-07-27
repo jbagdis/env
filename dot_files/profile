@@ -1,0 +1,80 @@
+# Startup Diagnostic Messages
+_msg() {
+	#[[ $- == *i* ]] && echo "$1"
+}
+_start() {
+	#[[ $- == *i* ]] && echo -n "$1 $(printf '\055%.0s' {1..40})" | head -c 45
+}
+_done() {
+	#[[ $- == *i* ]] && echo " [ DONE ]"
+}
+
+# Set the SHELL environment variable 
+ps -p $(echo "$$") -o "comm=" | grep "zsh" >/dev/null 2>&1 && export SHELL="/bin/zsh"
+
+_msg "####### Starting Shell ($SHELL) #######"
+
+# PATH
+_start "Setting Path"
+export PATH="$HOME/bin/local:$HOME/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin:/opt/X11/bin:/usr/local/opt/coreutils/libexec/gnubin"
+_done
+
+# ALIASES
+_start "Configuring Aliases"
+alias l="ls -bFGhT"
+alias ll="ls -labFGhT"
+alias lle="ls -l@abeFGhT"
+alias gw="./gradlew"
+alias gwnd="./gradlew --no-daemon"
+alias gitpush='git push || $(git push 2>&1 | grep "git push --set-upstream")'
+_done
+
+# MEMOIZED PROFILE
+if [ -e ~/.profile.memoized ]; then
+  _start "Loading Memoized Environment"
+  source ~/.profile.memoized
+  _done
+else
+  # START MEMOIZING PROFILE
+  TMPDIR=$(mktemp -d)
+  env | sort > "$TMPDIR/before"
+  
+  # JAVA ENVIRONMENT
+  _start "Initializing Java Environment"
+  export JENV_ROOT=/usr/local/var/jenv
+  if which jenv > /dev/null; then eval "$(jenv init -)"; fi
+  export JAVA_HOME=$(/usr/libexec/java_home)
+  export JAVA_1_8_HOME=$(/usr/libexec/java_home -v 1.8)
+  export JAVA_1_7_HOME=$(/usr/libexec/java_home -v 1.7)
+  _done
+
+  # PYTHON ENVIRONMENT
+  #_start "Initializing Python Environment"
+  #export WORKON_HOME=~/.virtualenv
+  #source /usr/local/bin/virtualenvwrapper.sh
+  #export NLTK_DATA="$HOME/var/nltk_data"
+  #_done
+
+  # NODE ENVIRONMENT
+  _start "Initializing Node.js Environment"
+  export NVM_DIR="$HOME/.nvm"
+  . "$(brew --prefix nvm)/nvm.sh"
+  _done
+
+fi
+
+# LOCAL ENVIRONMENT
+if [ -e ~/.profile.local ]; then
+  source ~/.profile.local
+fi
+
+# FINISH MEMOIZING PROFILE
+if [ ! -e ~/.profile.memoized ]; then
+  _start "Memoizing Environment"
+  env | sort > "$TMPDIR/after"
+  comm -13 "$TMPDIR/before" "$TMPDIR/after" | sed "s/^/export /" > ~/.profile.memoized
+  rm -rf "$TMPDIR"
+  _done
+fi
+
+_msg ""
