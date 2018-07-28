@@ -50,7 +50,7 @@ else
   if which jenv > /dev/null; then eval "$(jenv init -)"; fi
   export JAVA_HOME=$(/usr/libexec/java_home)
   export JAVA_1_8_HOME=$(/usr/libexec/java_home -v 1.8)
-  export JAVA_1_7_HOME=$(/usr/libexec/java_home -v 1.7)
+  #export JAVA_1_7_HOME=$(/usr/libexec/java_home -v 1.7)
   _done
 
   # PYTHON ENVIRONMENT
