@@ -2,7 +2,14 @@
 #
 # Adapted from https://github.com/robbyrussell/oh-my-zsh.git
 #
-#ENVGIT=~/env-git
+
+git_setup() {
+  env git clone --progress --depth=1 https://github.com/jbagdis/env.git "$ENVGIT"
+  pushd "$ENVGIT"
+  env git submodule init
+  env git submodule update
+  popd
+}
 
 main() {
   # Use colors, but only if connected to a terminal, and that terminal
@@ -41,7 +48,6 @@ main() {
     exit 1
   fi
   command -v zsh >/dev/null 2>&1 && printf "${GREEN}\t'zsh' found.\n${NORMAL}" || (printf "${RED}\t'zsh' not found.\n${NORMAL}" && exit 1)
-  #printf "All prerequisites satisfied.\n"
   
   printf "${BLUE}Checking for previously-installed environment...\n${NORMAL}"
   if [ ! -n "$ENVGIT" ]; then
@@ -50,7 +56,7 @@ main() {
   if [ -d "$ENVGIT" ]; then
     printf "${YELLOW}\tYou already have an environment installed.\n${NORMAL}"
     printf "\tYou'll need to remove $ENVGIT if you want to re-install.\n"
-    #exit
+    exit 1
   else
     printf "${GREEN}\tNone found.\n${NORMAL}"
   fi
@@ -71,7 +77,7 @@ main() {
       exit 1
     fi
   fi
-  env git clone --progress --depth=1 https://github.com/jbagdis/env.git "$ENVGIT" 2>&1 | sed 's/^/\'$'\t/' || {
+  git_setup 2>&1 | sed 's/^/\'$'\t/' || {
     printf "${RED}\tError: git clone failed\n${NORMAL}"
     exit 1
   }
