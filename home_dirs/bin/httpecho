@@ -10,10 +10,21 @@ import sys
 class EchoHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
     def do_GET(self):
-        #logging.info(self.address_string)
         logging.info("Request from %s:%s -- %s" % (self.client_address[0], self.client_address[1], self.requestline))
         logging.info("Headers:\n\t" + re.sub(r'\n', '\n\t', str(self.headers)))
         SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
+    
+    def do_POST(self):
+        logging.info("Request from %s:%s -- %s" % (self.client_address[0], self.client_address[1], self.requestline))
+        logging.info("Headers:\n\t" + re.sub(r'\n', '\n\t', str(self.headers)))
+        if ("expect: 100-continue" in str(self.headers).lower()):
+            logging.info("Got 'Expect: 100-Continue'")
+            SimpleHTTPServer.SimpleHTTPRequestHandler.send_response(self, 100, "Continue")
+            logging.info("Sent '100 Continue' response")
+        content = self.rfile.read(int(self.headers.getheader('Content-Length')))
+        logging.info("Content:\n\t>" + re.sub(r'\n', '<\n\t>', content) + "<")
+        SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
+
 
 def run_server(port):
     httpd = SocketServer.TCPServer(("", port), EchoHandler)
