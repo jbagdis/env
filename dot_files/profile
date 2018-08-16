@@ -16,7 +16,7 @@ _msg "####### Starting Shell ($SHELL) #######"
 
 # PATH
 _start "Setting Path"
-export PATH="$HOME/.bin.local:$HOME/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin:/opt/X11/bin:/usr/local/opt/coreutils/libexec/gnubin"
+export PATH="$HOME/.bin.local:$HOME/bin:$HOME/.jenv/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin:/opt/X11/bin:/usr/local/opt/coreutils/libexec/gnubin"
 _done
 
 # ALIASES
