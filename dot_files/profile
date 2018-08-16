@@ -48,13 +48,15 @@ else
   _start "Initializing Java Environment"
   export JENV_ROOT=/usr/local/var/jenv
   if which jenv > /dev/null; then eval "$(jenv init -)"; fi
-  export JAVA_HOME=$(/usr/libexec/java_home)
-  /usr/libexec/java_home -v 1.8 >/dev/null 2>&1 && \
-  export JAVA_1_8_HOME=$(/usr/libexec/java_home -v 1.8)
-  /usr/libexec/java_home -v 1.7 >/dev/null 2>&1 && \
-  export JAVA_1_7_HOME=$(/usr/libexec/java_home -v 1.7)
-  /usr/libexec/java_home -v 1.6 >/dev/null 2>&1 && \
-  export JAVA_1_6_HOME=$(/usr/libexec/java_home -v 1.6)
+  if [ -e /usr/libexec/java_home ]; then
+    export JAVA_HOME=$(/usr/libexec/java_home)
+    /usr/libexec/java_home -v 1.8 >/dev/null 2>&1 && \
+    export JAVA_1_8_HOME=$(/usr/libexec/java_home -v 1.8)
+    /usr/libexec/java_home -v 1.7 >/dev/null 2>&1 && \
+    export JAVA_1_7_HOME=$(/usr/libexec/java_home -v 1.7)
+    /usr/libexec/java_home -v 1.6 >/dev/null 2>&1 && \
+    export JAVA_1_6_HOME=$(/usr/libexec/java_home -v 1.6)
+  fi
   _done
 
   # PYTHON ENVIRONMENT
