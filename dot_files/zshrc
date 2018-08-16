@@ -117,3 +117,8 @@ zle -N zle-keymap-select
 #setopt transientrprompt
 export KEYTIMEOUT=1
 # End Set VI editing mode
+
+# LOCAL ENVIRONMENT
+if [ -e ~/.zshrc.local ]; then
+  source ~/.zshrc.local
+fi
