@@ -83,7 +83,7 @@ main() {
   }
   
   # link all files from the env git repo into the home directory
-  source "$GITENV/link.sh"
+  source "$ENVGIT/link.sh"
   
   # If this user's login shell is not already "zsh", attempt to switch.
   printf "${BLUE}Verifying that your shell is zsh...\n${NORMAL}"
