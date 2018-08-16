@@ -69,7 +69,11 @@ else
   # NODE ENVIRONMENT
   _start "Initializing Node.js Environment"
   export NVM_DIR="$HOME/.nvm"
-  . "$(brew --prefix nvm)/nvm.sh"
+  if which brew > /dev/null 2>&1; then
+    . "$(brew --prefix nvm)/nvm.sh"
+  else
+    . ~/.nvm/nvm.sh
+  fi
   _done
   
   # GIT ENVIRONMENT
