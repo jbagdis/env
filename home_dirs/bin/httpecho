@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 
 import argparse
+import BaseHTTPServer
 import logging
 import re
 import SimpleHTTPServer
 import SocketServer
+import ssl
 import sys
 
 class EchoHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
@@ -26,10 +28,15 @@ class EchoHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
 
 
-def run_server(port):
-    httpd = SocketServer.TCPServer(("", port), EchoHandler)
+def run_server(port, ssl_cert_file):
+    if not ssl_cert_file:
+        httpd = SocketServer.TCPServer(("", port), EchoHandler)
+        sys.stderr.write("Listening for HTTP on %d.\n" % port)
+    else:
+        httpd = BaseHTTPServer.HTTPServer(("", port), EchoHandler)
+        httpd.socket = ssl.wrap_socket(httpd.socket, certfile=ssl_cert_file, server_side=True)
+        sys.stderr.write("Listening for HTTPS on %d.\n" % port)
 
-    sys.stderr.write("Listening on %d.\n" % port)
     httpd.serve_forever()
 
 def parse_arguments():
@@ -39,6 +46,9 @@ def parse_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument('-p', '--port', type=int, default=8000,
         help="port on which to bind the HTTP server (default: 8000)")
+    parser.add_argument('--ssl', type=str,
+        help="path to PEM-encoded certificates and key. If this is provided, " \
+            + "server will listen for HTTPS requests instead of HTTP")
     return parser.parse_args()
 
 def main(args):
@@ -46,7 +56,7 @@ def main(args):
     Run the server from the command line.
     '''
     logging.basicConfig(format='%(levelname)s: %(message)s', level=logging.INFO)
-    run_server(args.port)
+    run_server(args.port, args.ssl)
     
 if __name__ == '__main__':
     try:
