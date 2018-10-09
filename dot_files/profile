@@ -16,7 +16,7 @@ _msg "####### Starting Shell ($SHELL) #######"
 
 # PATH
 _start "Setting Path"
-export PATH="$HOME/bin/local:$HOME/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin:/opt/X11/bin:/usr/local/opt/coreutils/libexec/gnubin"
+export PATH="$HOME/.bin.local:$HOME/bin:$HOME/.jenv/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin:/opt/X11/bin:/usr/local/opt/coreutils/libexec/gnubin"
 _done
 
 # ALIASES
@@ -48,9 +48,15 @@ else
   _start "Initializing Java Environment"
   export JENV_ROOT=/usr/local/var/jenv
   if which jenv > /dev/null; then eval "$(jenv init -)"; fi
-  export JAVA_HOME=$(/usr/libexec/java_home)
-  export JAVA_1_8_HOME=$(/usr/libexec/java_home -v 1.8)
-  #export JAVA_1_7_HOME=$(/usr/libexec/java_home -v 1.7)
+  if [ -e /usr/libexec/java_home ]; then
+    export JAVA_HOME=$(/usr/libexec/java_home)
+    /usr/libexec/java_home -v 1.8 >/dev/null 2>&1 && \
+    export JAVA_1_8_HOME=$(/usr/libexec/java_home -v 1.8)
+    /usr/libexec/java_home -v 1.7 >/dev/null 2>&1 && \
+    export JAVA_1_7_HOME=$(/usr/libexec/java_home -v 1.7)
+    /usr/libexec/java_home -v 1.6 >/dev/null 2>&1 && \
+    export JAVA_1_6_HOME=$(/usr/libexec/java_home -v 1.6)
+  fi
   _done
 
   # PYTHON ENVIRONMENT
@@ -63,7 +69,19 @@ else
   # NODE ENVIRONMENT
   _start "Initializing Node.js Environment"
   export NVM_DIR="$HOME/.nvm"
-  . "$(brew --prefix nvm)/nvm.sh"
+  if which brew > /dev/null 2>&1; then
+    . "$(brew --prefix nvm)/nvm.sh"
+  else
+    . ~/.nvm/nvm.sh
+  fi
+  _done
+  
+  # GIT ENVIRONMENT
+  _start "Setting up Git Environment"
+  export GIT_AUTHOR_NAME="Jeffrey Bagdis"
+  export GIT_AUTHOR_EMAIL="jbagdis@users.noreply.github.com"
+  export GIT_COMMITTER_NAME="$GIT_AUTHOR_NAME"
+  export GIT_COMMITTER_EMAIL="$GIT_AUTHOR_EMAIL"
   _done
 
 fi

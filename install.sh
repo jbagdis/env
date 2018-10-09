@@ -82,38 +82,8 @@ main() {
     exit 1
   }
   
-  printf "${BLUE}Linking config files into home directory...\n${NORMAL}"
-  if [ -e ~/.inputrc ]; then
-    printf "\tBacking up .inputrc\n"
-    mv ~/.inputrc ~/.inputrc.bak
-  fi
-  if [ -e ~/.oh-my-zsh ]; then
-    printf "\tBacking up .oh-my-zsh\n"
-    rm -rf ~/.oh-my-zsh.bak
-    mv ~/.oh-my-zsh ~/.oh-my-zsh.bak
-  fi
-  if [ -e ~/.profile ]; then
-    printf "\tBacking up .profile\n"
-    mv ~/.profile ~/.profile.bak
-  fi
-  if [ -e ~/.zprofile ]; then
-    printf "\tBacking up .zprofile\n"
-    mv ~/.zprofile ~/.zprofile.bak
-  fi
-  if [ -e ~/.zshrc ]; then
-    printf "\tBacking up .zshrc\n"
-    mv ~/.zshrc ~/.zshrc.bak
-  fi
-  printf "${GREEN}\tLinking .inputrc\n${NORMAL}"
-  ln -sf "$ENVGIT/dot_files/inputrc" ~/.inputrc
-  printf "${GREEN}\tLinking .oh-my-zsh\n${NORMAL}"
-  ln -sf "$ENVGIT/dot_files/oh-my-zsh" ~/.oh-my-zsh
-  printf "${GREEN}\tLinking .profile\n${NORMAL}"
-  ln -sf "$ENVGIT/dot_files/profile" ~/.profile
-  printf "${GREEN}\tLinking .zprofile\n${NORMAL}"
-  ln -sf "$ENVGIT/dot_files/profile" ~/.zprofile
-  printf "${GREEN}\tLinking .zshrc\n${NORMAL}"
-  ln -sf "$ENVGIT/dot_files/zshrc" ~/.zshrc
+  # link all files from the env git repo into the home directory
+  source "$ENVGIT/link.sh"
   
   # If this user's login shell is not already "zsh", attempt to switch.
   printf "${BLUE}Verifying that your shell is zsh...\n${NORMAL}"
