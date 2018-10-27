@@ -1,0 +1,54 @@
+#!/usr/bin/env python
+
+import sys
+import argparse
+import time
+from collections import defaultdict
+from subprocess import Popen, PIPE
+
+def main(args):
+    actions[args.action]()
+
+def action_on():
+    cmd = 'kextload -b com.apple.iokit.BroadcomBluetoothHostControllerUSBTransport'
+    print "Turning bluetooth on"
+    Popen(cmd, shell=True).wait()
+    print "Waiting for bluetooth to spin up...",
+    sys.stdout.flush()
+    time.sleep(5)
+    print "done."
+
+def action_off():
+    cmd = 'kextunload -b com.apple.iokit.BroadcomBluetoothHostControllerUSBTransport'
+    print "Turning bluetooth off"
+    Popen(cmd, shell=True)    
+    
+def action_reset():
+    action_off()
+    time.sleep(1)
+    action_on()
+    
+def action_status():
+    cmd = 'kextstat -b com.apple.iokit.BroadcomBluetoothHostControllerUSBTransport'
+    p = Popen(cmd, shell=True, stdout=PIPE)
+    output = p.stdout.read()
+    print 'Bluetooth is',
+    print  'on' if 'com.apple.iokit.BroadcomBluetoothHostControllerUSBTransport' in output else 'off'
+    
+def action_default():
+    print "ERROR: bad action"
+    
+actions = defaultdict(lambda: action_default, {
+    "on": action_on,
+    "off": action_off,
+    "reset": action_reset,
+    "status": action_status
+})
+
+def parse_args(argv):
+    parser = argparse.ArgumentParser(description='Manipulate Bluetooth Subsystem.')
+    parser.add_argument('action', choices=actions.keys(), help='command to perform.')
+    return parser.parse_args()
+    
+if __name__ == '__main__':
+    main(parse_args(sys.argv))

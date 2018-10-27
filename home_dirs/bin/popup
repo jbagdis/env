@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+popup() {
+  osascript << EOF > /dev/null 2>&1
+tell app "System Events" to display dialog "$1" with title "Shell"
+EOF
+  if [ "$?" -eq "0" ]
+  then
+    echo "OK"
+    exit 0
+  else
+    echo "Cancel"
+    exit 1
+  fi
+}
+
+if [ -n "$1" ]
+then
+  text="$(echo $1 | sed -e "s/\"/\\\\\"/g")"
+  popup "$text"
+fi
+text=$(cat)
+text="$(echo $text | sed -e "s/\"/\\\\\"/g")"
+popup "$text"

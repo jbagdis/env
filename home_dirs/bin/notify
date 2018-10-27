@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+notify() {
+  osascript << EOF > /dev/null 2>&1
+display notification "$1" with title "Shell"
+delay 1
+EOF
+}
+
+if [ -n "$1" ]
+then
+  text="$(echo $1 | sed -e "s/\"/\\\\\"/g")"
+  notify "$text"
+  exit 0
+fi
+text=$(cat)
+text="$(echo $text | sed -e "s/\"/\\\\\"/g")"
+notify "$text"
+
