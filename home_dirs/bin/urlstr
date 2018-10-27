@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+
+urldecode() {
+    # urldecode <string>
+
+    local url_encoded="${1//+/ }"
+    printf '%b' "${url_encoded//%/\\x}"
+}
+
+urlencode() {
+    # urlencode <string>
+    old_lc_collate=$LC_COLLATE
+    LC_COLLATE=C
+    
+    local length="${#1}"
+    for (( i = 0; i < length; i++ )); do
+        local c="${1:i:1}"
+        case $c in
+            [a-zA-Z0-9.~_-]) printf "$c" ;;
+            *) printf '%%%02X' "'$c" ;;
+        esac
+    done
+    
+    LC_COLLATE=$old_lc_collate
+}
+
+case $1 in
+"-d")
+  if [ -n "$2" ];
+  then
+    urldecode "$2"
+    echo ""
+    exit 0
+  fi
+  while read line
+  do
+    urldecode "$line"
+    echo ""
+  done
+  ;;
+"-e")
+  if [ -n "$2" ];
+  then
+    urlencode "$2"
+    echo ""
+    exit 0
+  fi
+  while read line
+  do
+    urlencode "$line"
+    echo ""
+  done
+  ;;
+*)
+  echo "usage:"
+  echo "  encode: urlstr -e"
+  echo "  decode: urlstr -d"
+esac
+  
