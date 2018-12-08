@@ -1,3 +1,11 @@
+[author]
+	name = Jeffrey Bagdis
+	email = jbagdis@users.noreply.github.com
+
+[committer]
+	name = Jeffrey Bagdis
+	email = jbagdis@users.noreply.github.com
+
 [core]
     excludesfile = ~/.gitignore_global
 
