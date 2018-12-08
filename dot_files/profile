@@ -27,6 +27,7 @@ alias lle="ls -l@abeFGhT"
 alias gw="./gradlew"
 alias gwnd="./gradlew --no-daemon"
 alias gitpush='git push || $(git push 2>&1 | grep "git push --set-upstream")'
+alias pso='ps -o pid,user,%cpu,%mem,comm'
 _done
 
 #UMASK
@@ -74,14 +75,6 @@ else
   else
     . ~/.nvm/nvm.sh
   fi
-  _done
-  
-  # GIT ENVIRONMENT
-  _start "Setting up Git Environment"
-  export GIT_AUTHOR_NAME="Jeffrey Bagdis"
-  export GIT_AUTHOR_EMAIL="jbagdis@users.noreply.github.com"
-  export GIT_COMMITTER_NAME="$GIT_AUTHOR_NAME"
-  export GIT_COMMITTER_EMAIL="$GIT_AUTHOR_EMAIL"
   _done
 
 fi
