@@ -27,6 +27,7 @@ alias lle="ls -l@abeFGhT"
 alias gw="./gradlew"
 alias gwnd="./gradlew --no-daemon"
 alias gitpush='git push || $(git push 2>&1 | grep "git push --set-upstream")'
+alias pso='ps -o pid,user,%cpu,%mem,comm'
 _done
 
 #UMASK
