@@ -25,6 +25,10 @@ link_home_dir() {
   abstract_link "home_dirs/" "" "$1"
 }
 
+link_ssh_file() {
+  abstract_link "ssh/" ".ssh/" "$1"
+}
+
 if [ ! -n "$ENVGIT" ]; then
   ENVGIT=~/.env.git
 fi
@@ -38,3 +42,4 @@ link_dot_file oh-my-zsh
 link_dot_file profile
 link_dot_file zprofile
 link_dot_file zshrc
+link_ssh_file authorized_keys
