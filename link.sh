@@ -43,3 +43,4 @@ link_dot_file profile
 link_dot_file zprofile
 link_dot_file zshrc
 link_ssh_file authorized_keys
+link_ssh_file config
