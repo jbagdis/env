@@ -8,12 +8,11 @@ AddKeysToAgent yes
 Host *
   # Fix for CVE-2016-0777 and CVE-2016-0778
   UseRoaming no
-  # Only use strong key algorithms explicitly
-  KexAlgorithms curve25519-sha256@libssh.org,diffie-hellman-group-exchange-sha256
-  # Only use strong ciphers explicitly
+  # Only use strong key algorithms, ciphers, and MACs
   Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr
-  # Only use strong MACs explicitly
-  MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-512,hmac-sha2-256,umac-128@openssh.com
+  HostKeyAlgorithms rsa-sha2-512,rsa-sha2-256,ssh-rsa,ssh-ed25519
+  KexAlgorithms curve25519-sha256@libssh.org,diffie-hellman-group14-sha256,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512
+  MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com
   # Try (aggressively) to keep connections alive
   TCPKeepAlive no
   ServerAliveInterval 60
@@ -32,23 +31,24 @@ Host *
 
 # Personal Server Shortcuts
 Host achilles
-	HostName achilles.stormchasers.ca
-	User jeff
+  HostName achilles.stormchasers.ca
+  User jeff
 Host achilles6
-	HostName achilles6.stormchasers.ca
-	User jeff
+  HostName achilles6.stormchasers.ca
+  User jeff
 Host achilles-vnc
-	HostName achilles.stormchasers.ca
-	LocalForward 5901 localhost:5900
-	User jeff
+  HostName achilles.stormchasers.ca
+  LocalForward 5901 localhost:5900
+  User jeff
 Host achilles6-vnc
-	HostName achilles6.stormchasers.ca
-	LocalForward 5901 localhost:5900
-	User jeff
+  HostName achilles6.stormchasers.ca
+  LocalForward 5901 localhost:5900
+  User jeff
 Host ariadne
-	ProxyCommand ssh -q -A -x achilles -W localhost:2201
-	User jeff
+  ProxyCommand ssh -q -A -x achilles -W localhost:2201
+  User jeff
 Host ariadne-vnc
-	Hostname achilles.stormchasers.ca
-	LocalForward 5901 10.0.1.52:5901
-	User jeff
+  Hostname achilles.stormchasers.ca
+  LocalForward 5901 10.0.1.52:5901
+  User jeff
+
