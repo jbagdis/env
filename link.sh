@@ -1,4 +1,8 @@
-#!/bin/sh
+
+
+if [ ! -n "$ENVGIT" ]; then
+  exit 1
+fi
 
 abstract_link() {
   SRC_PREFIX="$1"
@@ -6,12 +10,17 @@ abstract_link() {
   FILE="$3"
   SRC="${SRC_PREFIX}${FILE}"
   DEST="${DEST_PREFIX}${FILE}"
-  if [ -e ~/"${DEST}" ]; then
-    printf "\tBacking up ${DEST}\n"
-    if [ -d ~/"${DEST}.bak" ]; then
-      rm -rf ~/"${DEST}.bak"
+  if [ -L ~/"${DEST}" ]; then
+    # file is a link; don't bother backing up
+    true
+  else
+    if [ -e ~/"${DEST}" ]; then
+      printf "\tBacking up ${DEST}\n"
+      if [ -d ~/"${DEST}.bak" ]; then
+        rm -rf ~/"${DEST}.bak"
+      fi
+      mv ~/"${DEST}" ~/"${DEST}.bak"
     fi
-    mv ~/"${DEST}" ~/"${DEST}.bak"
   fi
   printf "${GREEN}\tLinking ${DEST}\n${NORMAL}"
   ln -sf "${ENVGIT}/${SRC}" ~/"${DEST}"
@@ -29,6 +38,10 @@ link_ssh_file() {
   abstract_link "ssh/" ".ssh/" "$1"
 }
 
+link_launch_agent() {
+  abstract_link "LaunchAgents/" "Library/LaunchAgents/" "$1"
+}
+
 if [ ! -n "$ENVGIT" ]; then
   ENVGIT=~/.env.git
 fi
@@ -44,3 +57,8 @@ link_dot_file zprofile
 link_dot_file zshrc
 link_ssh_file authorized_keys
 link_ssh_file config
+ls LaunchAgents | while read file
+do
+  link_launch_agent "$file"
+  launchctl load ~/Library/LaunchAgents/"$file"
+done
