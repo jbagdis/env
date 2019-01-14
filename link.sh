@@ -1,5 +1,3 @@
-
-
 if [ ! -n "$ENVGIT" ]; then
   exit 1
 fi
@@ -12,6 +10,7 @@ abstract_link() {
   DEST="${DEST_PREFIX}${FILE}"
   if [ -L ~/"${DEST}" ]; then
     # file is a link; don't bother backing up
+    rm ~/"${DEST}"
     true
   else
     if [ -e ~/"${DEST}" ]; then
@@ -24,6 +23,7 @@ abstract_link() {
   fi
   printf "${GREEN}\tLinking ${DEST}\n${NORMAL}"
   ln -sf "${ENVGIT}/${SRC}" ~/"${DEST}"
+  #echo "ln -sf \"${ENVGIT}/${SRC}\" ~/\"${DEST}\""
 }
 
 link_dot_file() {

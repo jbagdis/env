@@ -37,16 +37,11 @@ Host *
 Host achilles
   HostName achilles.stormchasers.ca
   User jeff
-Host achilles6
-  HostName achilles6.stormchasers.ca
-  User jeff
 Host achilles-vnc
   HostName achilles.stormchasers.ca
   LocalForward 5901 localhost:5900
   User jeff
-Host achilles6-vnc
-  HostName achilles6.stormchasers.ca
-  LocalForward 5901 localhost:5900
+Host achilles.stormchasers.ca
   User jeff
 Host ariadne
   ProxyCommand ssh -q -A -x achilles -W localhost:2201
@@ -55,4 +50,10 @@ Host ariadne-vnc
   Hostname achilles.stormchasers.ca
   LocalForward 5901 10.0.1.52:5901
   User jeff
+Host antigone
+  HostName achilles.stormchasers.ca
+  User jbagdis
+Host antigone.stormchasers.ca
+  User jbagdis
+
 

@@ -47,6 +47,12 @@ main() {
   # re-link all files from the env git repo into the home directory
   source "$ENVGIT/link.sh"
   
+  # remove memoized profile so it will be regenerated
+  if [ -e ~/.profile.memoized ]; then
+    printf "${BLUE}Resetting memoized profile...\n${NORMAL}"
+    rm ~/.profile.memoized
+  fi
+  
   # If this user's login shell is not already "zsh", attempt to switch.
   printf "${BLUE}Verifying that your shell is zsh...\n${NORMAL}"
   TEST_CURRENT_SHELL=$(expr "$SHELL" : '.*/\(.*\)')
@@ -64,7 +70,8 @@ main() {
     printf "${GREEN}\tYour current shell is already ${TEST_CURRENT_SHELL}\n${NORMAL}"
   fi
   
-  printf "${BOLD}Shell Environment successfully installed.\n${NORMAL}" 
+  printf "${BOLD}Shell Environment successfully installed.\n${NORMAL}"
+  printf "${BLUE}Memoizing new profile...\n${NORMAL}"
   env zsh -l
 }
 
