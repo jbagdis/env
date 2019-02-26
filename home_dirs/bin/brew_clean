@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+brew doctor 2>&1 | awk '
+BEGIN { in_block = 0; }
+/^\s*$/ { in_block = 0; }
+in_block == 1 { print $0 }
+/^Unexpected/ { in_block = 1; }
+' | while read filepath
+do
+  trim1="${filepath#/usr/local/}"
+  file="${trim1%/*}"
+  sudo mkdir -p "/usr/local/unbrewed/$file"
+  sudo mv "$filepath" "/usr/local/unbrewed/$file"
+done
