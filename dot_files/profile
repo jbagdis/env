@@ -24,8 +24,8 @@ _start "Configuring Aliases"
 alias l="ls -bFGhT"
 alias ll="ls -labFGhT"
 alias lle="ls -l@abeFGhT"
-alias gw="./gradlew"
-alias gwnd="./gradlew --no-daemon"
+#alias gw="./gradlew" # replaced by shell script in ~/bin
+alias gwnd="gw --no-daemon"
 alias gitpush='git push || $(git push 2>&1 | grep "git push --set-upstream")'
 alias pso='ps -o pid,user,%cpu,%mem,comm'
 alias rmm2='rm -rf ~/.m2'
@@ -51,7 +51,7 @@ else
   export JENV_ROOT=/usr/local/var/jenv
   if which jenv > /dev/null; then eval "$(jenv init -)"; fi
   if [ -e /usr/libexec/java_home ]; then
-    export JAVA_HOME=$(/usr/libexec/java_home)
+    #export JAVA_HOME=$(/usr/libexec/java_home)
     /usr/libexec/java_home -v 1.8 >/dev/null 2>&1 && \
     export JAVA_1_8_HOME=$(/usr/libexec/java_home -v 1.8)
     /usr/libexec/java_home -v 1.7 >/dev/null 2>&1 && \

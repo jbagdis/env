@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+IFS=$'\n\t'
+
+if [ -e './gradleww' ]; then
+  stemma $@
+else
+  ./gradlew $@
+fi
