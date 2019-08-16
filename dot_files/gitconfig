@@ -2,7 +2,6 @@
     path = ~/.gitconfig.user
     path = ~/.gitconfig.local
 
-
 [core]
     excludesfile = ~/.gitignore_global
     
