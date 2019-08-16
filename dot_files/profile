@@ -50,15 +50,6 @@ else
   _start "Initializing Java Environment"
   export JENV_ROOT=/usr/local/var/jenv
   if which jenv > /dev/null; then eval "$(jenv init -)"; fi
-  if [ -e /usr/libexec/java_home ]; then
-    #export JAVA_HOME=$(/usr/libexec/java_home)
-    /usr/libexec/java_home -v 1.8 >/dev/null 2>&1 && \
-    export JAVA_1_8_HOME=$(/usr/libexec/java_home -v 1.8)
-    /usr/libexec/java_home -v 1.7 >/dev/null 2>&1 && \
-    export JAVA_1_7_HOME=$(/usr/libexec/java_home -v 1.7)
-    /usr/libexec/java_home -v 1.6 >/dev/null 2>&1 && \
-    export JAVA_1_6_HOME=$(/usr/libexec/java_home -v 1.6)
-  fi
   _done
 
   # PYTHON ENVIRONMENT
@@ -95,19 +86,3 @@ if [ ! -e ~/.profile.memoized ]; then
 fi
 
 _msg ""
-# added by Anaconda3 2018.12 installer
-# >>> conda init >>>
-# !! Contents within this block are managed by 'conda init' !!
-__conda_setup="$(CONDA_REPORT_ERRORS=false '/Applications/anaconda3/bin/conda' shell.bash hook 2> /dev/null)"
-if [ $? -eq 0 ]; then
-    \eval "$__conda_setup"
-else
-    if [ -f "/Applications/anaconda3/etc/profile.d/conda.sh" ]; then
-        . "/Applications/anaconda3/etc/profile.d/conda.sh"
-        CONDA_CHANGEPS1=false conda activate base
-    else
-        \export PATH="/Applications/anaconda3/bin:$PATH"
-    fi
-fi
-unset __conda_setup
-# <<< conda init <<<
