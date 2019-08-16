@@ -85,6 +85,9 @@ main() {
   # link all files from the env git repo into the home directory
   source "$ENVGIT/link.sh"
   
+  # Ensure ~/.ssh/sockets directory exits
+  mkdir -p ~/.ssh/sockets
+  
   # If this user's login shell is not already "zsh", attempt to switch.
   printf "${BLUE}Verifying that your shell is zsh...\n${NORMAL}"
   TEST_CURRENT_SHELL=$(expr "$SHELL" : '.*/\(.*\)')
