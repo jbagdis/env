@@ -54,6 +54,7 @@ fi
 printf "${BLUE}Linking environment components into home directory...\n${NORMAL}"
 link_home_dir bin
 link_dot_file gitconfig
+link_dot_file gitconfig.user "_$(get_user)"
 link_dot_file gitignore_global
 link_dot_file inputrc
 link_dot_file oh-my-zsh

@@ -1,13 +1,11 @@
-[user]
-	name = Jeffrey Bagdis
-	email = jbagdis@users.noreply.github.com
+[include]
+    path = ~/.gitconfig.user
+    path = ~/.gitconfig.local
+
 
 [core]
     excludesfile = ~/.gitignore_global
     
-[include]
-    path = ~/.gitconfig.local
-
 [push]
     default = simple
     followTags = true
