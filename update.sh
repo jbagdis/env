@@ -44,6 +44,11 @@ main() {
     exit 1
   fi
   
+  # update the env git repo
+  pushd "$ENVGIT"
+  git pull
+  popd
+  
   # re-link all files from the env git repo into the home directory
   source "$ENVGIT/link.sh"
   

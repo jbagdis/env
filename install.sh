@@ -4,7 +4,7 @@
 #
 
 git_setup() {
-  env git clone --progress --depth=1 https://github.com/jbagdis/env.git "$ENVGIT"
+  env git clone --progress https://github.com/jbagdis/env.git "$ENVGIT"
   pushd "$ENVGIT"
   env git submodule init
   env git submodule update
