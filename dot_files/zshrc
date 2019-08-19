@@ -122,7 +122,6 @@ export KEYTIMEOUT=1
 # Don't share history between terminals
 unsetopt share_history
 
-
 # LOCAL ENVIRONMENT
 if [ -e ~/.zshrc.local ]; then
   source ~/.zshrc.local
