@@ -52,6 +52,10 @@ DISABLE_AUTO_UPDATE="true"
 # Add wisely, as too many plugins slow down shell startup.
 plugins=(git docker)
 
+# Allow /usr/local to be owned by a different user
+# This is necessary to support multi-user installs
+ZSH_DISABLE_COMPFIX=true
+
 source $ZSH/oh-my-zsh.sh
 
 # User configuration
