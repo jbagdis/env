@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+FILE="$1"
+OUT="$FILE.enc"
+
+echo -n "Password: "
+read -s PASS
+
+echo "Encypting recovery codes in '$FILE'"
+echo "$FILE" > "$OUT"
+echo "" >> "$OUT"
+cat "$FILE" | while read LINE
+do
+    ENCLINE=$(echo "$LINE" | openssl aes-256-cbc -a -salt -k "$PASS")
+    HEX=$(echo "$ENCLINE" | hexdump -C)
+    echo "$ENCLINE"
+    echo "$HEX"
+    echo ""
+done >> "$OUT"
