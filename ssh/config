@@ -55,5 +55,8 @@ Host antigone
   User jbagdis
 Host antigone.stormchasers.ca
   User jbagdis
-
-
+Host agamemnon
+  HostName agamemnon.stormchasers.ca
+  User user
+Host agamemnon.stormchasers.ca
+  User user
