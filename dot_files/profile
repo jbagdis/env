@@ -27,6 +27,7 @@ alias lle="ls -l@abeFGhT"
 #alias gw="./gradlew" # replaced by shell script in ~/bin
 alias gwnd="gw --no-daemon"
 alias gitpush='git push || $(git push 2>&1 | grep "git push --set-upstream")'
+alias gitpull='git fetch --all --prune && git pull'
 alias pso='ps -o pid,user,%cpu,%mem,comm'
 alias rmm2='rm -rf ~/.m2'
 _done
