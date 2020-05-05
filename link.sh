@@ -1,3 +1,5 @@
+set -eou pipefail
+
 if [ ! -n "$ENVGIT" ]; then
   exit 1
 fi

@@ -60,6 +60,8 @@ main() {
   else
     printf "${GREEN}\tNone found.\n${NORMAL}"
   fi
+  # Enable fail-on-unset-variable once we have checked prerequisites
+  set -u
 
   # Prevent the cloned repository from having insecure permissions. Failing to do
   # so causes compinit() calls to fail with "command not found: compdef" errors
@@ -87,6 +89,9 @@ main() {
   
   # Ensure ~/.ssh/sockets directory exits
   mkdir -p ~/.ssh/sockets
+  
+  # Clone the PowerLevel10k ZSH theme
+  git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "$ENVGIT"/dotfiles/oh-my-zsh/custom/themes/powerlevel10k
   
   # If this user's login shell is not already "zsh", attempt to switch.
   printf "${BLUE}Verifying that your shell is zsh...\n${NORMAL}"
