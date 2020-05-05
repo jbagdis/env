@@ -43,6 +43,8 @@ main() {
     printf "\tYou'll need to install one first before you can update.\n"
     exit 1
   fi
+  # Enable fail-on-unset-variable once we have checked for an existing environment
+  set -u
   
   # update the env git repo
   pushd "$ENVGIT"
@@ -57,6 +59,10 @@ main() {
     printf "${BLUE}Resetting memoized profile...\n${NORMAL}"
     rm ~/.profile.memoized
   fi
+  
+  # Re-clone the PowerLevel10k ZSH theme
+  rm -rf "$ENVGIT"/dotfiles/oh-my-zsh/custom/themes/powerlevel10k
+  git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "$ENVGIT"/dotfiles/oh-my-zsh/custom/themes/powerlevel10k
   
   # If this user's login shell is not already "zsh", attempt to switch.
   printf "${BLUE}Verifying that your shell is zsh...\n${NORMAL}"

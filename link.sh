@@ -1,3 +1,5 @@
+set -eou pipefail
+
 if [ ! -n "$ENVGIT" ]; then
   exit 1
 fi
@@ -63,6 +65,8 @@ link_dot_file zprofile
 link_dot_file zshrc
 link_ssh_file authorized_keys "_$(get_user)"
 link_ssh_file config
+link_dot_file p10k.zsh "_$(get_user)"
+link_dot_file "cache/p10k-instant-prompt-$(get_user).zsh"
 ls LaunchAgents | while read file
 do
   link_launch_agent "$file"

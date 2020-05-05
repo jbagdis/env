@@ -27,6 +27,7 @@ alias lle="ls -l@abeFGhT"
 #alias gw="./gradlew" # replaced by shell script in ~/bin
 alias gwnd="gw --no-daemon"
 alias gitpush='git push || $(git push 2>&1 | grep "git push --set-upstream")'
+alias gitpull='git fetch --all --prune && git pull'
 alias pso='ps -o pid,user,%cpu,%mem,comm'
 alias rmm2='rm -rf ~/.m2'
 _done
@@ -68,19 +69,19 @@ else
     . ~/.nvm/nvm.sh
   fi
   _done
+  
+  # LOCAL ENVIRONMENT
+  if [ -e ~/.profile.local ]; then
+    source ~/.profile.local
+  fi
 
-fi
-
-# LOCAL ENVIRONMENT
-if [ -e ~/.profile.local ]; then
-  source ~/.profile.local
 fi
 
 # FINISH MEMOIZING PROFILE
 if [ ! -e ~/.profile.memoized ]; then
   _start "Memoizing Environment"
   env | sort > "$TMPDIR/after"
-  comm -13 "$TMPDIR/before" "$TMPDIR/after" | sed "s/^/export /" > ~/.profile.memoized
+  comm -13 "$TMPDIR/before" "$TMPDIR/after" | sed "s/^/export /" | sed 's/=/="/' | sed 's/$/"/' > ~/.profile.memoized
   rm -rf "$TMPDIR"
   _done
 fi
