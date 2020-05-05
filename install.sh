@@ -3,16 +3,73 @@
 # Adapted from https://github.com/robbyrussell/oh-my-zsh.git
 #
 
-source functions.sh
+init_colors() {
+    # Use colors, but only if connected to a terminal
+	# and only if that terminal supports them.
+    if which tput >/dev/null 2>&1; then
+        ncolors=$(tput colors)
+    fi
+    if [ -t 1 ] && [ -n "$ncolors" ] && [ "$ncolors" -ge 8 ]; then
+      RED="$(tput setaf 1)"
+      GREEN="$(tput setaf 2)"
+      YELLOW="$(tput setaf 3)"
+      BLUE="$(tput setaf 4)"
+      BOLD="$(tput bold)"
+      NORMAL="$(tput sgr0)"
+    else
+      RED=""
+      GREEN=""
+      YELLOW=""
+      BLUE=""
+      BOLD=""
+      NORMAL=""
+    fi
+}
 
-check_prereqs() {
+init_variables() {
+	# set default values
+	if [ ! -n "${ENVGIT}" ]; then
+	  ENVGIT=~/.env.git
+	fi
+}
+
+create_or_update_links() {
+    # (re-)link all files from the env git repo into the home directory
+    source "${ENVGIT}/link.sh"
+}
+
+setup_ssh_sockets_dir() {
+  # Ensure ~/.ssh/sockets directory exits
+  mkdir -p ~/.ssh/sockets
+}
+
+set_shell_to_zsh() {
+    # If this user's login shell is not already "zsh", attempt to switch.
+    printf "${BLUE}Verifying that your shell is zsh...\n${NORMAL}"
+    TEST_CURRENT_SHELL=$(expr "${SHELL}" : '.*/\(.*\)')
+    if [ "${TEST_CURRENT_SHELL}" != "zsh" ]; then
+      # If this platform provides a "chsh" command (not Cygwin), do it, man!
+      if hash chsh >/dev/null 2>&1; then
+        printf "${GREEN}\tChanging your default shell to zsh.\n${NORMAL}"
+        chsh -s $(grep /zsh$ /etc/shells | tail -1)
+      # Else, suggest the user do so manually.
+      else
+        printf "${RED}\tCannot change your shell automatically because this system does not have chsh.\n${NORMAL}"
+        printf "\tPlease manually change your default shell to zsh.\n"
+      fi
+    else
+      printf "${GREEN}\tYour current shell is already ${TEST_CURRENT_SHELL}\n${NORMAL}"
+    fi
+}
+
+install_check_prereqs() {
   printf "${BLUE}Checking prerequisites...\n${NORMAL}"
   command -v curl >/dev/null 2>&1 && printf "${GREEN}\t'curl' found.\n${NORMAL}" || (printf "${RED}\t'curl' not found.\n${NORMAL}" && exit 1)
   command -v git >/dev/null 2>&1 && printf "${GREEN}\t'git' found.\n${NORMAL}" || (printf "${RED}\t'git' not found.\n${NORMAL}" && exit 1)
   command -v zsh >/dev/null 2>&1 && printf "${GREEN}\t'zsh' found.\n${NORMAL}" || (printf "${RED}\t'zsh' not found.\n${NORMAL}" && exit 1) 
 }
 
-check_existing_env() {
+install_check_existing_env() {
   printf "${BLUE}Checking for previously-installed environment...\n${NORMAL}"
   if [ ! -n "${ENVGIT}" ]; then
     ENVGIT=~/.env.git
@@ -26,7 +83,18 @@ check_existing_env() {
   fi
 }
 
-git_setup() {
+update_check_existing_env() {
+    printf "${BLUE}Checking for previously-installed environment...\n${NORMAL}"
+    if [ -d "${ENVGIT}" ]; then
+      printf "${GREEN}\tFound at '${ENVGIT}'.\n${NORMAL}"
+    else
+      printf "${YELLOW}\tYou do not have an environment installed.\n${NORMAL}"
+      printf "\tYou'll need to install one first before you can update.\n"
+      exit 1
+    fi
+}
+
+install_env_git_do_clone() {
   env git clone --progress https://github.com/jbagdis/env.git "${ENVGIT}"
   pushd "${ENVGIT}"
   env git submodule init
@@ -34,7 +102,7 @@ git_setup() {
   popd
 }
 
-clone_env_git() {
+install_env_git() {
   # Prevent the cloned repository from having insecure permissions.
   #  Failing to do so causes compinit() calls to fail
   #  with "command not found: compdef" errors
@@ -54,37 +122,72 @@ clone_env_git() {
       exit 1
     fi
   fi
-  git_setup 2>&1 | sed 's/^/\'$'\t/' || {
+  install_env_git_do_clone 2>&1 | sed 's/^/\'$'\t/' || {
     printf "${RED}\tError: git clone failed\n${NORMAL}"
     exit 1
   }
 }
 
-setup_ssh_sockets() {
-  # Ensure ~/.ssh/sockets directory exits
-  mkdir -p ~/.ssh/sockets
+update_env_git() {
+    # update the env git repo
+    pushd "${ENVGIT}"
+    git pull
+    popd
 }
 
-setup_powerlevel_10k() {
+install_powerlevel_10k() {
   # Clone the PowerLevel10k ZSH theme
   git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "${ENVGIT}"/dot_files/oh-my-zsh/custom/themes/powerlevel10k  
 }
 
-main() {
+update_powerlevel10k() {
+    # Pull or clone the PowerLevel10k ZSH theme
+    if [ -d "${ENVGIT}/dot_files/oh-my-zsh/custom/themes/powerlevel10k" ]; then
+  	  pushd "${ENVGIT}/dot_files/oh-my-zsh/custom/themes/powerlevel10k"
+  	  git pull
+  	  popd
+    else
+  	  git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "${ENVGIT}/dot_files/oh-my-zsh/custom/themes/powerlevel10k"
+    fi
+}
+
+update_remove_memoized_profile() {
+    # remove memoized profile so it will be regenerated
+    if [ -e ~/.profile.memoized ]; then
+      printf "${BLUE}Resetting memoized profile...\n${NORMAL}"
+      rm ~/.profile.memoized
+    fi
+}
+
+install() {
+  init_colors
+  init_variables
+  set -eou pipefail
   printf "${BOLD}Installing Shell Environment.\n${NORMAL}"
-  check_prereqs
-  check_existing_env
-  clone_env_git
+  install_check_prereqs
+  install_check_existing_env
+  install_env_git
   create_or_update_links
-  setup_ssh_sockets
-  setup_powerlevel_10k
+  setup_ssh_sockets_dir
+  install_powerlevel_10k
   set_shell_to_zsh
   printf "${BOLD}Shell Environment successfully installed.\n${NORMAL}" 
   printf "${BLUE}Memoizing new profile...\n${NORMAL}"
   env zsh -l
 }
 
-init_colors
-init_variables
-set -eou pipefail
-main
+update() {
+  init_colors
+  init_variables
+  set -eou pipefail
+  printf "${BOLD}Updating Shell Environment.\n${NORMAL}"
+  update_check_existing_env
+  update_env_git
+  create_or_update_links
+  update_remove_memoized_profile
+  update_powerlevel10k
+  set_shell_to_zsh
+  printf "${BOLD}Shell Environment successfully installed.\n${NORMAL}"
+  printf "${BLUE}Memoizing new profile...\n${NORMAL}"
+  env zsh -l
+}
