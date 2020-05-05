@@ -8,13 +8,13 @@ The environment template is installed by running one of the following commands i
 #### via curl
 
 ```shell
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/jbagdis/env/master/install.sh)"
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/jbagdis/env/master/install.sh); install"
 ```
 
 #### via wget
 
 ```shell
-sh -c "$(wget https://raw.githubusercontent.com/jbagdis/env/master/install.sh -O -)"
+sh -c "$(wget https://raw.githubusercontent.com/jbagdis/env/master/install.sh -O -); install"
 ```
 
 ## Usage
