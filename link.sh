@@ -1,11 +1,11 @@
 set -eou pipefail
 
-if [ ! -n "$ENVGIT" ]; then
+if [ ! -n "${ENVGIT}" ]; then
   exit 1
 fi
 
 get_user() {
-	echo "$USER" | sed "s/jbagdis/jeff/"
+	echo "${USER}" | sed "s/jbagdis/jeff/"
 }
 
 abstract_link() {
@@ -49,26 +49,26 @@ link_launch_agent() {
   abstract_link "LaunchAgents/" "Library/LaunchAgents/" "$1" "$2"
 }
 
-if [ ! -n "$ENVGIT" ]; then
+if [ ! -n "${ENVGIT}" ]; then
   ENVGIT=~/.env.git
 fi
 
 printf "${BLUE}Linking environment components into home directory...\n${NORMAL}"
-link_home_dir bin
-link_dot_file gitconfig
+link_home_dir bin ""
+link_dot_file gitconfig ""
 link_dot_file gitconfig.user "_$(get_user)"
-link_dot_file gitignore_global
-link_dot_file inputrc
-link_dot_file oh-my-zsh
-link_dot_file profile
-link_dot_file zprofile
-link_dot_file zshrc
+link_dot_file gitignore_global ""
+link_dot_file inputrc ""
+link_dot_file oh-my-zsh ""
+link_dot_file profile ""
+link_dot_file zprofile ""
+link_dot_file zshrc ""
 link_ssh_file authorized_keys "_$(get_user)"
-link_ssh_file config
+link_ssh_file config ""
 link_dot_file p10k.zsh "_$(get_user)"
-link_dot_file "cache/p10k-instant-prompt-$(get_user).zsh"
-ls LaunchAgents | while read file
+link_dot_file "cache/p10k-instant-prompt-$(get_user).zsh" ""
+ls "${ENVGIT}/LaunchAgents" | while read file
 do
-  link_launch_agent "$file"
+  link_launch_agent "$file" ""
   launchctl load ~/Library/LaunchAgents/"$file"
 done
