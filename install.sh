@@ -255,6 +255,4 @@ update() {
   update_powerlevel10k
   set_shell_to_zsh
   printf "${BOLD}Shell Environment successfully installed.\n${NORMAL}"
-  # printf "${BLUE}Memoizing new profile...\n${NORMAL}"
-  # env zsh -l
 }
