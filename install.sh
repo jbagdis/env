@@ -67,7 +67,7 @@ setup_ssh_sockets() {
 
 setup_powerlevel_10k() {
   # Clone the PowerLevel10k ZSH theme
-  git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "${ENVGIT}"/dotfiles/oh-my-zsh/custom/themes/powerlevel10k  
+  git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "${ENVGIT}"/dot_files/oh-my-zsh/custom/themes/powerlevel10k  
 }
 
 main() {
