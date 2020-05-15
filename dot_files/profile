@@ -64,7 +64,7 @@ load_memoized_profile() {
     _start "Checking if memoized environment is up to date"
     source ~/.profile.memoized
     if ${LOADED_MEMOIZED_PROFILE}; then
-      true && _yes
+      _done
     else
       _no
       return -2
@@ -85,7 +85,7 @@ save_memoized_profile() {
         if [[ "${MEMO_PROFILE_CHECKSUM}" != "${PROFILE_CHECKSUM}" ]]; then
           return
         fi
-        _done
+        _yes
         _start "Loading Memoized Environment"
       ''' |
         sed "s/^    //" |
