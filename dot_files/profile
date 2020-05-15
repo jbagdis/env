@@ -47,6 +47,11 @@ else
   TMPDIR=$(mktemp -d)
   env | sort > "$TMPDIR/before"
   
+  # GENERAL SHELL ENVIRONMEMT
+  _start "Initializing General Shell Environment"
+  export LESSEDIT='mate -l %lm %f'
+  _done
+  
   # JAVA ENVIRONMENT
   _start "Initializing Java Environment"
   export JENV_ROOT=/usr/local/var/jenv
