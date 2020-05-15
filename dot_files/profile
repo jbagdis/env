@@ -1,97 +1,243 @@
-# Startup Diagnostic Messages
+##############################################################################
+### Preferences
+##############################################################################
+
+# Silent mode suppresses startup diagnostic messages
+SILENT_MODE=false
+
+# Memoization saves some environment variables set by expensive initialization scripts
+# to speed up the launch time for new shell sessions
+ENABLE_MEMOIZATION=true
+
+# Whether to memoize the environment even if there were some failures
+MEMOIZE_FAILURES=false
+
+# allow preferences to be overridden by local config
+if [ -e ~/.profile.preferences ]; then
+  source ~/.profile.preferences
+fi
+
+
+##############################################################################
+### State Variables
+##############################################################################
+NO_FAILURE_HAS_OCCURRED=true
+
+
+##############################################################################
+### Startup diagnostic message Functions
+##############################################################################
 _msg() {
-	[[ $- == *i* ]] && echo "$1"
+	${SILENT_MODE} || ([[ $- == *i* ]] && echo "$1")
 }
 _start() {
-	[[ $- == *i* ]] && echo -n "$1 $(printf '\055%.0s' {1..40})" | head -c 45
+	${SILENT_MODE} || ([[ $- == *i* ]] && echo -n "$1 $(printf '\055%.0s' {1..64})" | head -c 69)
 }
 _done() {
-	[[ $- == *i* ]] && echo " [ DONE ]"
+	${SILENT_MODE} || ([[ $- == *i* ]] && echo " [ ${BLUE}DONE${NORMAL} ]")
+}
+_fail() {
+  NO_FAILURE_HAS_OCCURRED=false
+	${SILENT_MODE} || ([[ $- == *i* ]] && echo " [ ${RED}FAIL${NORMAL} ]" && echo "\t$1" >&2)
+}
+_yes() {
+	${SILENT_MODE} || ([[ $- == *i* ]] && echo " [  ${GREEN}OK${NORMAL}  ]")
+}
+_no() {
+	${SILENT_MODE} || ([[ $- == *i* ]] && echo " [  ${YELLOW}NO${NORMAL}  ]")
 }
 
-# Set the SHELL environment variable 
-ps -p $(echo "$$") -o "comm=" | grep "zsh" >/dev/null 2>&1 && export SHELL="/bin/zsh"
 
-_msg "\n####### Starting Shell ($SHELL) #######"
-
-# PATH
-_start "Setting Path"
-export PATH="$HOME/.bin.local:$HOME/bin:$HOME/.jenv/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin:/opt/X11/bin:/usr/local/opt/coreutils/libexec/gnubin"
-_done
-
-# ALIASES
-_start "Configuring Aliases"
-alias l="ls -bFGhT"
-alias ll="ls -labFGhT"
-alias lle="ls -l@abeFGhT"
-#alias gw="./gradlew" # replaced by shell script in ~/bin
-alias gwnd="gw --no-daemon"
-alias gitpush='git push || $(git push 2>&1 | grep "git push --set-upstream")'
-alias gitpull='git fetch --all --prune && git pull'
-alias pso='ps -o pid,user,%cpu,%mem,comm'
-alias rmm2='rm -rf ~/.m2'
-_done
-
-#UMASK
-_start "Setting umask"
-umask 022
-_done
-
-# MEMOIZED PROFILE
-if [ -e ~/.profile.memoized ]; then
-  _start "Loading Memoized Environment"
-  source ~/.profile.memoized
-  _done
-else
-  # START MEMOIZING PROFILE
-  local MEMO_TMPDIR=$(mktemp -d)
+##############################################################################
+### Profile memoization utility functions
+##############################################################################
+save_env_snapshop() {
+  MEMO_TMPDIR=$(mktemp -d)
   env | sort > "${MEMO_TMPDIR}/before"
-  
-  # GENERAL SHELL ENVIRONMEMT
-  _start "Initializing General Shell Environment"
+}
+load_memoized_profile() {
+  LOADED_MEMOIZED_PROFILE=false
+  PROFILE_CHECKSUM="$(cat "${HOME}/.profile" "${HOME}/.profile.local" "${HOME}/.profile.preferences" | shasum)"
+  _start "Checking if memoized environment exists"
+  if [ -e ~/.profile.memoized ]; then
+    _yes
+    _start "Checking if memoized environment is up to date"
+    source ~/.profile.memoized
+    if ${LOADED_MEMOIZED_PROFILE}; then
+      true && _yes
+    else
+      _no
+      return -2
+    fi
+  else
+    _no
+    return -1
+  fi
+}
+save_memoized_profile() {
+  if ${LOADED_MEMOIZED_PROFILE}; then
+    true
+  elif ${ENABLE_MEMOIZATION}; then
+    if ${NO_FAILURE_HAS_OCCURRED} || ${MEMOIZE_FAILURES}; then
+      _start "Memoizing Environment"
+      echo '''
+        MEMO_PROFILE_CHECKSUM="CHECKSUM_TOKEN_GOES_HERE"
+        if [[ "${MEMO_PROFILE_CHECKSUM}" != "${PROFILE_CHECKSUM}" ]]; then
+          return
+        fi
+        _done
+        _start "Loading Memoized Environment"
+      ''' |
+        sed "s/^    //" |
+        sed "s/CHECKSUM_TOKEN_GOES_HERE/${PROFILE_CHECKSUM}/" > ~/.profile.memoized
+      env | sort > "${MEMO_TMPDIR}/after"
+      comm -13 "${MEMO_TMPDIR}/before" "${MEMO_TMPDIR}/after" | sed "s/^/export /" | sed 's/=/="/' | sed 's/$/"/' >> ~/.profile.memoized
+      rm -rf "${MEMO_TMPDIR}"
+      echo '''
+        LOADED_MEMOIZED_PROFILE=true
+      ''' | sed "s/^    //" >> ~/.profile.memoized
+      _done
+    else
+      _msg "Skipping profile memoization because a failure has occurred."
+    fi
+  fi
+}
+
+
+##############################################################################
+### Main profile initialization functions
+##############################################################################
+init_colors() {
+  _start "Setting up color variables"
+  RED=""
+  GREEN=""
+  YELLOW=""
+  BLUE=""
+  BOLD=""
+  NORMAL=""
+  [[ $- == *i* ]] || (_fail && return)
+  if which tput >/dev/null 2>&1; then
+      local ncolors=$(tput colors)
+  fi
+  if [ -t 1 ] && [ -n "${ncolors}" ] && [ "${ncolors}" -ge 8 ]; then
+    RED="$(tput setaf 1)"
+    GREEN="$(tput setaf 2)"
+    YELLOW="$(tput setaf 3)"
+    BLUE="$(tput setaf 4)"
+    BOLD="$(tput bold)"
+    NORMAL="$(tput sgr0)"
+    _done
+  else
+    _fail
+  fi
+}
+
+set_shell() {
+  ps -p $(echo "$$") -o "comm=" | grep "zsh" >/dev/null 2>&1 && export SHELL="/bin/zsh"
+}
+
+set_path() {
+  _start "Setting PATH"
+  export PATH="${HOME}/.bin.local:${HOME}/bin:${HOME}/.jenv/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin:/opt/X11/bin:/usr/local/opt/coreutils/libexec/gnubin"
+  _done
+}
+
+set_aliases() {
+  _start "Configuring aliases"
+  alias l="ls -bFGhT"
+  alias ll="ls -labFGhT"
+  alias lle="ls -l@abeFGhT"
+  alias gw="./gradlew"
+  alias gwnd="gw --no-daemon"
+  alias gitpush='git push || $(git push 2>&1 | grep "git push --set-upstream")'
+  alias gitpull='git fetch --all --prune && git pull'
+  alias pso='ps -o pid,user,%cpu,%mem,comm'
+  alias rmm2='rm -rf ~/.m2'
+  _done
+}
+
+set_umask() {
+  _start "Setting umask"
+  umask 022
+  _done
+}
+
+setup_misc_env() {
+  _start "Setting miscellaneous environment variables"
   export LESSEDIT='mate -l %lm %f'
   _done
-  
-  # JAVA ENVIRONMENT
+}
+
+setup_java() {
   _start "Initializing Java Environment"
-  export JENV_ROOT=/usr/local/var/jenv
-  if which jenv > /dev/null; then eval "$(jenv init -)"; fi
-  _done
-
-  # PYTHON ENVIRONMENT
-  _start "Initializing Python Environment"
-  if command -v pyenv 1>/dev/null 2>&1; then
-    eval "$(pyenv init -)"
-  fi
-  #export WORKON_HOME=~/.virtualenv
-  #source /usr/local/bin/virtualenvwrapper.sh
-  #export NLTK_DATA="$HOME/var/nltk_data"
-  _done
-
-  # NODE ENVIRONMENT
-  _start "Initializing Node.js Environment"
-  export NVM_DIR="$HOME/.nvm"
-  if which brew > /dev/null 2>&1; then
-    . "$(brew --prefix nvm)/nvm.sh"
+  if command -v jenv >/dev/null 2>&1; then
+    export JENV_ROOT=/usr/local/var/jenv
+    eval "$(jenv init -)"
+    _done
   else
-    . ~/.nvm/nvm.sh
+    _fail "'jenv' is not installed"
   fi
-  _done
+}
+
+setup_python() {
+  _start "Initializing Python Environment"
+  if command -v pyenv >/dev/null 2>&1; then
+    eval "$(pyenv init -)"
+    #export WORKON_HOME=~/.virtualenv
+    #source /usr/local/bin/virtualenvwrapper.sh
+    #export NLTK_DATA="${HOME}/var/nltk_data"
+    _done
+  else
+    _fail "'pyenv' is not installed"
+  fi
+}
+
+setup_node() {
+  _start "Initializing Node.js Environment"
+  initialize_nvm() {
+    export NVM_DIR="${HOME}/.nvm"
+    mkdir -p "${NVM_DIR}"
+    . "$1"
+    _done
+  }
   
-  # LOCAL ENVIRONMENT
+  local homebrew_nvm="$(brew --prefix nvm 2>/dev/null)/nvm.sh)"
+  local local_nvm="${HOME}/.nvm/nvm.sh"
+  if command -v brew >/dev/null 2>&1 && [[ -e "${homebrew_nvm}" ]]; then
+    initialize_nvm "${homebrew_nvm}"
+  elif [[ -e "${local_nvm}" ]]; then
+    initialize_nvm "${local_nvm}"
+  else
+    unset NVM_DIR
+    _fail "'nvm' is not installed"
+  fi
+}
+
+include_local_profile_customizations() {
   if [ -e ~/.profile.local ]; then
     source ~/.profile.local
   fi
+}
 
-fi
+##############################################################################
+### Profile initialization routine
+##############################################################################
 
-# FINISH MEMOIZING PROFILE
-if [ ! -e ~/.profile.memoized ]; then
-  _start "Memoizing Environment"
-  env | sort > "${MEMO_TMPDIR}/after"
-  comm -13 "${MEMO_TMPDIR}/before" "${MEMO_TMPDIR}/after" | sed "s/^/export /" | sed 's/=/="/' | sed 's/$/"/' > ~/.profile.memoized
-  rm -rf "${MEMO_TMPDIR}"
-  _done
-fi
+set_shell
+_msg "\n                 ${BOLD}####### Starting Shell (${SHELL}) #######${NORMAL}"
+init_colors
+set_path
+set_aliases
+set_umask
+save_env_snapshop
+initialize_memoizable_profile() {
+  setup_misc_env
+  setup_java
+  setup_python
+  setup_node
+  include_local_profile_customizations
+}
+load_memoized_profile || initialize_memoizable_profile
+save_memoized_profile
 
 _msg ""
