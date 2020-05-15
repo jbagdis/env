@@ -1,6 +1,7 @@
 Include config.local
 
 # Enable the OSX Keychain
+IgnoreUnknown UseKeychain
 UseKeychain yes
 AddKeysToAgent yes
 
