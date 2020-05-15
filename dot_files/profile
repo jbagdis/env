@@ -57,7 +57,7 @@ save_env_snapshop() {
 }
 load_memoized_profile() {
   LOADED_MEMOIZED_PROFILE=false
-  PROFILE_CHECKSUM="$(cat "${HOME}/.profile" "${HOME}/.profile.local" "${HOME}/.profile.preferences" | shasum)"
+  PROFILE_CHECKSUM="$(cat "${HOME}/.profile" "${HOME}/.profile.local" "${HOME}/.profile.preferences" 2>/dev/null | shasum)"
   _start "Checking if memoized environment exists"
   if [ -e ~/.profile.memoized ]; then
     _yes
