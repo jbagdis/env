@@ -1,18 +1,18 @@
 # Startup Diagnostic Messages
 _msg() {
-	#[[ $- == *i* ]] && echo "$1"
+	[[ $- == *i* ]] && echo "$1"
 }
 _start() {
-	#[[ $- == *i* ]] && echo -n "$1 $(printf '\055%.0s' {1..40})" | head -c 45
+	[[ $- == *i* ]] && echo -n "$1 $(printf '\055%.0s' {1..40})" | head -c 45
 }
 _done() {
-	#[[ $- == *i* ]] && echo " [ DONE ]"
+	[[ $- == *i* ]] && echo " [ DONE ]"
 }
 
 # Set the SHELL environment variable 
 ps -p $(echo "$$") -o "comm=" | grep "zsh" >/dev/null 2>&1 && export SHELL="/bin/zsh"
 
-_msg "####### Starting Shell ($SHELL) #######"
+_msg "\n####### Starting Shell ($SHELL) #######"
 
 # PATH
 _start "Setting Path"
