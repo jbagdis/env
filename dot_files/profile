@@ -44,8 +44,8 @@ if [ -e ~/.profile.memoized ]; then
   _done
 else
   # START MEMOIZING PROFILE
-  TMPDIR=$(mktemp -d)
-  env | sort > "$TMPDIR/before"
+  local MEMO_TMPDIR=$(mktemp -d)
+  env | sort > "${MEMO_TMPDIR}/before"
   
   # GENERAL SHELL ENVIRONMEMT
   _start "Initializing General Shell Environment"
@@ -59,11 +59,14 @@ else
   _done
 
   # PYTHON ENVIRONMENT
-  #_start "Initializing Python Environment"
+  _start "Initializing Python Environment"
+  if command -v pyenv 1>/dev/null 2>&1; then
+    eval "$(pyenv init -)"
+  fi
   #export WORKON_HOME=~/.virtualenv
   #source /usr/local/bin/virtualenvwrapper.sh
   #export NLTK_DATA="$HOME/var/nltk_data"
-  #_done
+  _done
 
   # NODE ENVIRONMENT
   _start "Initializing Node.js Environment"
@@ -85,9 +88,9 @@ fi
 # FINISH MEMOIZING PROFILE
 if [ ! -e ~/.profile.memoized ]; then
   _start "Memoizing Environment"
-  env | sort > "$TMPDIR/after"
-  comm -13 "$TMPDIR/before" "$TMPDIR/after" | sed "s/^/export /" | sed 's/=/="/' | sed 's/$/"/' > ~/.profile.memoized
-  rm -rf "$TMPDIR"
+  env | sort > "${MEMO_TMPDIR}/after"
+  comm -13 "${MEMO_TMPDIR}/before" "${MEMO_TMPDIR}/after" | sed "s/^/export /" | sed 's/=/="/' | sed 's/$/"/' > ~/.profile.memoized
+  rm -rf "${MEMO_TMPDIR}"
   _done
 fi
 
