@@ -33,6 +33,14 @@ init_variables() {
 	fi
 }
 
+create_directories_if_needed() {
+  # Ensure ~/.ssh/sockets directory exits
+  mkdir -p ~/.ssh/sockets
+  
+  # Ensure ipython configuration directory exists
+  mkdir -p ~/.ipython/profile_default
+}
+
 create_or_update_links() {
   # (re-)link all files from the env git repo into the home directory
   printf "${BLUE}Linking environment components into home directory...\n${NORMAL}"
@@ -49,16 +57,13 @@ create_or_update_links() {
   link_ssh_file config ""
   link_dot_file p10k.zsh "_$(get_user)"
   link_dot_file "cache/p10k-instant-prompt-$(get_user).zsh" ""
+  link_dot_file "ipython/profile_default/ipython_config.py" ""
+  
   ls "${ENVGIT}/LaunchAgents" | while read file
   do
     link_launch_agent "$file" ""
     launchctl load ~/Library/LaunchAgents/"$file"
   done
-}
-
-setup_ssh_sockets_dir() {
-  # Ensure ~/.ssh/sockets directory exits
-  mkdir -p ~/.ssh/sockets
 }
 
 set_shell_to_zsh() {
@@ -234,8 +239,8 @@ install() {
   install_check_prereqs
   install_check_existing_env
   install_env_git
+  create_directories_if_needed
   create_or_update_links
-  setup_ssh_sockets_dir
   install_powerlevel_10k
   set_shell_to_zsh
   printf "${BOLD}Shell Environment successfully installed.\n${NORMAL}" 
@@ -250,6 +255,7 @@ update() {
   printf "${BOLD}Updating Shell Environment.\n${NORMAL}"
   update_check_existing_env
   update_env_git
+  create_directories_if_needed
   create_or_update_links
   update_remove_memoized_profile
   update_powerlevel10k
