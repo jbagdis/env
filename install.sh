@@ -39,9 +39,6 @@ create_directories_if_needed() {
   
   # Ensure ipython configuration directory exists
   mkdir -p ~/.ipython/profile_default
-
-  # Ensure .cache directory exists
-  mkdir -p ~/.cache
 }
 
 create_or_update_links() {
@@ -59,7 +56,6 @@ create_or_update_links() {
   link_ssh_file authorized_keys "_$(get_user)"
   link_ssh_file config ""
   link_dot_file p10k.zsh "_$(get_user)"
-  link_dot_file "cache/p10k-instant-prompt-$(get_user).zsh" ""
   link_dot_file "ipython/profile_default/ipython_config.py" ""
   
   ls "${ENVGIT}/LaunchAgents" | while read file
