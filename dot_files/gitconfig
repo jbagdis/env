@@ -62,7 +62,3 @@
 [push]
     default = simple
     followTags = true
-
-[user]
-	name = Jeffrey Bagdis
-	email = jeffrey.bagdis@shopify.com
