@@ -39,6 +39,9 @@ create_directories_if_needed() {
   
   # Ensure ipython configuration directory exists
   mkdir -p ~/.ipython/profile_default
+
+  # Ensure .cache directory exists
+  mkdir -p ~/.cache
 }
 
 create_or_update_links() {
