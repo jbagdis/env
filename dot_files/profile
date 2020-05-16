@@ -206,7 +206,7 @@ setup_node() {
     _done
   }
   
-  local homebrew_nvm="$(brew --prefix nvm 2>/dev/null)/nvm.sh)"
+  local homebrew_nvm="$(brew --prefix nvm 2>/dev/null)/nvm.sh"
   local local_nvm="${HOME}/.nvm/nvm.sh"
   if command -v brew >/dev/null 2>&1 && [[ -e "${homebrew_nvm}" ]]; then
     initialize_nvm "${homebrew_nvm}"
