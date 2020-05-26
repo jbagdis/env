@@ -57,6 +57,7 @@ create_or_update_links() {
   link_ssh_file config ""
   link_dot_file p10k.zsh "_$(get_user)"
   link_dot_file "ipython/profile_default/ipython_config.py" ""
+  link_dot_file "tmux.conf" ""
   
   ls "${ENVGIT}/LaunchAgents" | while read file
   do
