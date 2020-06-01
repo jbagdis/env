@@ -1,0 +1,63 @@
+#!/usr/bin/env python3
+
+import argparse
+from pathlib import PosixPath
+import subprocess
+import sys
+
+_PREFS_FILE=PosixPath('~/.other-chrome').expanduser()
+_GOOGLE_CHROME_EXECUTABLE='/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome'
+
+def main(args):
+    
+    if args.user is not None:
+        ssh_host_expression = "{user}@{host}".format(user=args.user, host=args.host)
+    else:
+        ssh_host_expression = "{host}".format(host=args.host)
+    
+    if args.kiosk:
+        ssh_command_to_execute = "{executable} --kiosk --app='{url}'".format(
+                executable=_GOOGLE_CHROME_EXECUTABLE,
+                url=args.url)
+    else:
+        ssh_command_to_execute = "{executable} '{url}'".format(
+                executable=_GOOGLE_CHROME_EXECUTABLE,
+                url=args.url)
+    
+    ssh_command = "ssh {host_expr} -C \"{cmd_to_exec}\"".format(
+                host_expr=ssh_host_expression,
+                cmd_to_exec=ssh_command_to_execute)
+                
+    subprocess.Popen(ssh_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+
+
+def parse_cli_args(cli_args):
+    default_host = None
+    if _PREFS_FILE.exists():
+        with open(_PREFS_FILE) as f:
+            default_host = f.readline().strip()
+    
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--kiosk', '-k', action='store_true', help="Open link in kiosk mode")
+    parser.add_argument(
+            '--user', '-u',
+            type=str,
+            help="SSH username (default = current user)")
+    parser.add_argument(
+            '--host', '-H',
+            type=str,
+            required=(default_host == None),
+            default=default_host,
+            help="SSH hostname %s" % (
+                    "(set a default in %s)" % _PREFS_FILE
+                    if default_host == None
+                    else "(default = '%s')" % default_host
+                    ))
+    parser.add_argument('url', type=str, help="URL to open")
+    return parser.parse_args(cli_args)
+
+
+if (__name__ == "__main__"):
+    args = parse_cli_args(sys.argv[1:])
+    main(args)

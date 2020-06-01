@@ -8,7 +8,7 @@ new_email="$3"
 
 git rebase -i "${rebase_from_hash}"
 
-while git status | grep "interactive rebase in progress" >/dev/null 2>&1; do
+while git status | grep "interactive rebase in progress\|rebasage interactif en cours" >/dev/null 2>&1; do
   current_email="$(git log -1 --pretty=format:'%ae')"
   if [[ "${current_email}" == "${old_email}" ]]; then
     current_name="$(git log -1 --pretty=format:'%an')"
