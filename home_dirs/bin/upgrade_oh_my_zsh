@@ -1,0 +1,3 @@
+#!/usr/bin/env zsh
+
+. ~/.oh-my-zsh/tools/upgrade.sh
