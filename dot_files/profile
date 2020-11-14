@@ -218,6 +218,16 @@ setup_node() {
   fi
 }
 
+setup_thefuck() {
+  _start "Initializing thefuck"
+  if command -v thefuck >/dev/null 2>&1; then
+    eval $(thefuck --alias)
+    _done
+  else
+    _fail "'thefuck' is not installed"
+  fi
+}
+
 include_local_profile_customizations() {
   if [ -e ~/.profile.local ]; then
     source ~/.profile.local
@@ -235,6 +245,7 @@ set_path
 set_aliases
 set_umask
 save_env_snapshop
+setup_thefuck
 initialize_memoizable_profile() {
   setup_misc_env
   setup_java
@@ -246,3 +257,4 @@ load_memoized_profile || initialize_memoizable_profile
 save_memoized_profile
 
 _msg ""
+
