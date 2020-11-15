@@ -2,18 +2,20 @@
 
 set -euo pipefail
 
-START_HOUR="9"
-END_HOUR="17"
-
 NOW_HOUR="$(date "+%H")"
 
-WORKDAY=$(((${NOW_HOUR} >= ${START_HOUR})) && ((${NOW_HOUR} < ${END_HOUR})) && echo "yes" || echo "no")
-
-case "${WORKDAY}" in
-  ("yes")
-    caffeinate -u -t 1
-    ;;
-  ("no")
-    # ...
+case "$(whoami)" in
+  ("jeff")
+    START_HOUR="9"
+    END_HOUR="17"
+    WORKDAY=$(((${NOW_HOUR} >= ${START_HOUR})) && ((${NOW_HOUR} < ${END_HOUR})) && echo "yes" || echo "no")
+    case "${WORKDAY}" in
+      ("yes")
+        caffeinate -u -t 1
+        ;;
+      ("no")
+        # ...
+        ;;
+    esac
     ;;
 esac
