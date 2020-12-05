@@ -151,8 +151,9 @@ set_aliases() {
   alias gwnd="gw --no-daemon"
   alias gitpush='git push || $(git push 2>&1 | grep "git push --set-upstream")'
   alias gitpull='git fetch --all --prune && git pull'
-  alias gitbranchclean='git branch | grep -v master | xargs git branch -d'
-  alias gitbranchcleanD='git branch | grep -v master | xargs git branch -D'
+  alias gitmain='git fetch --all --prune && git update-ref refs/heads/main refs/remotes/origin/main && git checkout main'
+  alias gitbranchclean='git branch | grep -v master | grep -v main | xargs git branch -d'
+  alias gitbranchcleanD='git branch | grep -v master | grep -v main | xargs git branch -D'
   alias pso='ps -o pid,user,%cpu,%mem,comm'
   alias rmm2='rm -rf ~/.m2'
   _done
