@@ -199,10 +199,10 @@ install_env_git() {
 update_env_git() {
     # update the env git repo
     pushd "${ENVGIT}"
-    if [ "$(git rev-parse --abbrev-ref HEAD)" = "master" ]; then
+    if [ "$(git rev-parse --abbrev-ref HEAD)" = "main" ]; then
       git pull
     else
-      echo "${YELLOW}\tYou are not on the 'master' branch; skipping 'git pull'.\n${NORMAL}"
+      echo "${YELLOW}\tYou are not on the 'main' branch; skipping 'git pull'.\n${NORMAL}"
     fi
     popd
 }
