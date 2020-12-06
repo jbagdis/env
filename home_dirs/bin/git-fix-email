@@ -1,18 +1,101 @@
-#!/usr/bin/env bash
+#!/usr/bin/env python3
 
-set -euo pipefail
+import argparse
+from subprocess import PIPE, run
+import sys
 
-rebase_from_hash="$1"
-old_email="$2"
-new_email="$3"
+def git_get_first_hash():
+    '''
+    Get the hash of the first commit in the current branch's history.
+    '''
+    rev_list = run(
+        ['git', 'rev-list', 'HEAD'],
+        check=True,
+        stdout=PIPE,
+        text=True
+    ).stdout.split('\n')
+    rev_list.reverse()
+    return next((line for line in rev_list if line.strip()))
 
-git rebase -i "${rebase_from_hash}"
+def git_interactive_rebase_in_progress():
+    '''
+    Determine if a git rebase is currently in progress.
+    '''
+    git_status=run(
+        ['git', 'status'],
+        check=True, stdout=PIPE, text=True
+    ).stdout
+    return 'interactive rebase in progress' in git_status or 'rebasage interactif en cours' in git_status
+    
 
-while git status | grep "interactive rebase in progress\|rebasage interactif en cours" >/dev/null 2>&1; do
-  current_email="$(git log -1 --pretty=format:'%ae')"
-  if [[ "${current_email}" == "${old_email}" ]]; then
-    current_name="$(git log -1 --pretty=format:'%an')"
-    git -c user.name="${current_name}" -c user.email="${new_email}" commit --amend --reuse-message=HEAD --reset-author
-  fi
-  git rebase --continue
-done
+def fix_email_in_git_history(args):
+    run(
+        ['git', 'rebase', '-i', args.from_ref],
+        check=True, text=True
+    )
+    
+    while git_interactive_rebase_in_progress():
+        current_email = run(
+            ['git', 'log', '-1', "--pretty=format:%ae"],
+            check=True, stdout=PIPE, text=True
+        ).stdout.strip()
+        if current_email == args.old_email:
+            print("Updating email from '%s' to '%s' for this commit" % (current_email, args.new_email))
+            current_name = run(
+                ['git', 'log', '-1', "--pretty=format:%an"],
+                check=True, stdout=PIPE, text=True
+            ).stdout.strip()
+            run(
+                [
+                    'git', '-c', "user.name='%s'" % current_name, '-c', "user.email='%s'" % args.new_email,
+                    'commit', '--amend', '--reuse-message=HEAD', '--reset-author'
+                ],
+                check=True, text=True
+            )
+        run(
+            ['git', 'rebase', '--continue'],
+            check=True, text=True
+        )
+    
+
+def main(args):
+    if args.from_ref is None:
+        args.from_ref = git_get_first_hash()
+    args.old_email = args.old_email.strip()
+    args.new_email = args.new_email.strip()
+    fix_email_in_git_history(args)
+    
+def parse_args(args):
+    parser = argparse.ArgumentParser(description='Fix author and committer emails in git history.')
+    # parser.add_argument('-A', '--ignore-author-email',
+    #     action='store_true',
+    #     default=False,
+    #     help="Don't update the author's email when it is incorrect")
+    # parser.add_argument('-C', '--ignore-committer-email',
+    #     action='store_true',
+    #     default=False,
+    #     help="Don't update the committer's email when it is incorrect")
+    parser.add_argument('-f', '--from-ref', type=str, help="Git reference from which to begin fixing (will proceed to HEAD)")
+    parser.add_argument('old_email', help="old (incorrect) email address to replace")
+    parser.add_argument('new_email', help="new (correct) email address to use as a replacement")
+    return parser.parse_args(args)
+
+if __name__ == '__main__':
+    main(parse_args(sys.argv[1:]))
+
+# set -euo pipefail
+# 
+# rebase_from_hash="$1"
+# old_email="$2"
+# new_email="$3"
+# 
+# git rebase -i "${rebase_from_hash}"
+# 
+# while git status | grep "interactive rebase in progress\|rebasage interactif en cours" >/dev/null 2>&1; do
+#   current_email="$(git log -1 --pretty=format:'%ae')"
+#   if [[ "${current_email}" == "${old_email}" ]]; then
+#     current_name="$(git log -1 --pretty=format:'%an')"
+#     git -c user.name="${current_name}" -c user.email="${new_email}" commit --amend --reuse-message=HEAD --reset-author
+#   fi
+#   git rebase --continue
+# done
