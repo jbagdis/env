@@ -4,18 +4,6 @@ import argparse
 from subprocess import PIPE, run
 import sys
 
-def git_get_first_hash():
-    '''
-    Get the hash of the first commit in the current branch's history.
-    '''
-    rev_list = run(
-        ['git', 'rev-list', 'HEAD'],
-        check=True,
-        stdout=PIPE,
-        text=True
-    ).stdout.split('\n')
-    rev_list.reverse()
-    return next((line for line in rev_list if line.strip()))
 
 def git_interactive_rebase_in_progress():
     '''
@@ -29,10 +17,20 @@ def git_interactive_rebase_in_progress():
     
 
 def fix_email_in_git_history(args):
-    run(
-        ['git', 'rebase', '-i', args.from_ref],
-        check=True, text=True
-    )
+    if args.from_ref is None:
+        current_branch = run(
+            ['git', 'branch', '--show-current'],
+            check=True, stdout=PIPE, text=True
+        ).stdout.strip()
+        run(
+            ['git', 'rebase', '-i', '--root', 'HEAD'],
+            check=True, text=True
+        )
+    else:
+        run(
+            ['git', 'rebase', '-i', args.from_ref],
+            check=True, text=True
+        )
     
     while git_interactive_rebase_in_progress():
         current_email = run(
@@ -56,14 +54,17 @@ def fix_email_in_git_history(args):
             ['git', 'rebase', '--continue'],
             check=True, text=True
         )
-    
+    if current_branch is not None:
+        run(
+            ['git', 'checkout', '-B', current_branch]
+        )
+
 
 def main(args):
-    if args.from_ref is None:
-        args.from_ref = git_get_first_hash()
     args.old_email = args.old_email.strip()
     args.new_email = args.new_email.strip()
     fix_email_in_git_history(args)
+
     
 def parse_args(args):
     parser = argparse.ArgumentParser(description='Fix author and committer emails in git history.')
@@ -79,6 +80,7 @@ def parse_args(args):
     parser.add_argument('old_email', help="old (incorrect) email address to replace")
     parser.add_argument('new_email', help="new (correct) email address to use as a replacement")
     return parser.parse_args(args)
+
 
 if __name__ == '__main__':
     main(parse_args(sys.argv[1:]))
