@@ -58,24 +58,24 @@ create_directories_if_needed() {
 create_or_update_links() {
   # (re-)link all files from the env git repo into the home directory
   printf "${BLUE}Linking environment components into home directory...\n${NORMAL}"
-  link_home_dir bin ""
-  link_dot_file gitconfig ""
-  link_dot_file gitconfig.user "_$(get_user)"
-  link_dot_file gitignore_global ""
-  link_dot_file inputrc ""
-  link_dot_file oh-my-zsh ""
-  link_dot_file profile ""
-  link_dot_file zprofile ""
-  link_dot_file zshrc ""
+  link_home_dir bin
+  link_dot_file gitconfig
+  link_dot_file gitconfig.user
+  link_dot_file gitignore_global
+  link_dot_file inputrc
+  link_dot_file oh-my-zsh
+  link_dot_file profile
+  link_dot_file zprofile
+  link_dot_file zshrc
   link_ssh_file authorized_keys "_$(get_user)"
-  link_ssh_file config ""
+  link_ssh_file config
   link_dot_file p10k.zsh "_$(get_user)"
-  link_dot_file "ipython/profile_default/ipython_config.py" ""
-  link_dot_file "tmux.conf" ""
+  link_dot_file "ipython/profile_default/ipython_config.py"
+  link_dot_file "tmux.conf"
 
   # shellcheck disable=SC2012
   ls "${ENV_GIT_DIR}/LaunchAgents" | while read -r file; do
-    link_launch_agent "$file" ""
+    link_launch_agent "$file"
     launchctl load ~/Library/LaunchAgents/"$file" 2>&1 | while read -r line; do
       printf "\t\t${YELLOW}> %s${NORMAL}\n" "$line"
     done
@@ -102,44 +102,70 @@ set_shell_to_zsh() {
 }
 
 abstract_link() {
+  # get the input arguments
+  # (the fourth argument (source suffix) is optional)
+  set +u
+  SRC_SUFFIX="$4"
+  if [ -z "${SRC_SUFFIX}" ]; then
+    SRC_SUFFIX=""
+  fi
+  set -u
   SRC_PREFIX="$1"
   DEST_PREFIX="$2"
   FILE="$3"
-  SRC_SUFFIX="$4"
   SRC="${SRC_PREFIX}${FILE}${SRC_SUFFIX}"
+  USER_SRC="users/$(get_user)/${SRC_PREFIX}${FILE}${SRC_SUFFIX}"
   DEST="${DEST_PREFIX}${FILE}"
-  if [ -L ~/"${DEST}" ]; then
-    # file is a link; don't bother backing up
-    rm ~/"${DEST}"
-    true
-  else
-    if [ -e ~/"${DEST}" ]; then
-      printf "\tBacking up ${DEST}\n"
-      if [ -d ~/"${DEST}.bak" ]; then
-        rm -rf ~/"${DEST}.bak"
-      fi
-      mv ~/"${DEST}" ~/"${DEST}.bak"
-    fi
+  # use the user-specific source if it exists
+  echo "${ENV_GIT_DIR}/${USER_SRC}"
+  if [ -e "${ENV_GIT_DIR}/${USER_SRC}" ]; then
+    SRC="${USER_SRC}"
   fi
-  printf "${GREEN}\tLinking ${DEST}\n${NORMAL}"
-  ln -sf "${ENV_GIT_DIR}/${SRC}" ~/"${DEST}"
-  #echo "ln -sf \"${ENV_GIT_DIR}/${SRC}\" ~/\"${DEST}\""
+  # ensure that the source exists before trying to link
+  if [ ! -e "${ENV_GIT_DIR}/${SRC}" ]; then
+    printf "\t${YELLOW}Not linking '${DEST}' because '${SRC}' does not exist.${NORMAL}\n"
+    touch ~/"${DEST}"
+  else
+    if [ -L ~/"${DEST}" ]; then
+      # file is a link; don't bother backing up
+      rm ~/"${DEST}"
+      true
+    else
+      if [ -e ~/"${DEST}" ]; then
+        printf "\tBacking up ${DEST}\n"
+        if [ -d ~/"${DEST}.bak" ]; then
+          rm -rf ~/"${DEST}.bak"
+        fi
+        mv ~/"${DEST}" ~/"${DEST}.bak"
+      fi
+    fi
+    printf "${GREEN}\tLinking ${DEST}\n${NORMAL}"
+    ln -sf "${ENV_GIT_DIR}/${SRC}" ~/"${DEST}"
+  fi
 }
 
 link_dot_file() {
+  set +u
   abstract_link "dot_files/" "." "$1" "$2"
+  set -u
 }
 
 link_home_dir() {
+  set +u
   abstract_link "home_dirs/" "" "$1" "$2"
+  set -u
 }
 
 link_ssh_file() {
+  set +u
   abstract_link "ssh/" ".ssh/" "$1" "$2"
+  set -u
 }
 
 link_launch_agent() {
+  set +u
   abstract_link "LaunchAgents/" "Library/LaunchAgents/" "$1" "$2"
+  set -u
 }
 
 install_check_prereqs() {
