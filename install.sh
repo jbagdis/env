@@ -59,9 +59,9 @@ create_or_update_links() {
   # (re-)link all files from the env git repo into the home directory
   printf "${BLUE}Linking environment components into home directory...\n${NORMAL}"
   link_home_dir bin
+  mkdir -p "${HOME}/bin/user"
+  mkdir -p "${HOME}/bin/local"
   link_home_dir bin/user
-  mkdir -p "$ENV_GIT_DIR/bin/user"
-  mkdir -p "$ENV_GIT_DIR/bin/local"
   link_dot_file gitconfig
   link_dot_file gitconfig.user
   link_dot_file gitignore_global
@@ -120,7 +120,6 @@ abstract_link() {
   USER_SRC="users/$(get_user)/${SRC_PREFIX}${FILE}${SRC_SUFFIX}"
   DEST="${DEST_PREFIX}${FILE}"
   # use the user-specific source if it exists
-  echo "${ENV_GIT_DIR}/${USER_SRC}"
   if [ -e "${ENV_GIT_DIR}/${USER_SRC}" ]; then
     SRC="${USER_SRC}"
   fi
