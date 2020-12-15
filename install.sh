@@ -8,12 +8,17 @@
 
 set -euo pipefail
 
+get_user() {
+  # user account name aliases should be defined here
+	echo "${USER/jbagdis/jeff}"
+}
+
 init_colors() {
   set +u
   # Use colors, but only if connected to a terminal
-	# and only if that terminal supports them.
+  # and only if that terminal supports them.
   if command -v tput >/dev/null 2>&1; then
-      num_colors=$(tput colors)
+    num_colors=$(tput colors)
   fi
   if [ -t 1 ] && [ -n "$num_colors" ] && [ "$num_colors" -ge 8 ]; then
     RED="$(tput setaf 1)"
@@ -34,18 +39,18 @@ init_colors() {
 }
 
 init_variables() {
-	# set default values
-	set +u
-	if [ -z "${ENV_GIT_DIR}" ]; then
-	  ENV_GIT_DIR=~/.env.git
-	fi
-	set -u
+  # set default values
+  set +u
+  if [ -z "${ENV_GIT_DIR}" ]; then
+    ENV_GIT_DIR=~/.env.git
+  fi
+  set -u
 }
 
 create_directories_if_needed() {
   # Ensure ~/.ssh/sockets directory exits
   mkdir -p ~/.ssh/sockets
-  
+
   # Ensure ipython configuration directory exists
   mkdir -p ~/.ipython/profile_default
 }
@@ -69,12 +74,11 @@ create_or_update_links() {
   link_dot_file "tmux.conf" ""
 
   # shellcheck disable=SC2012
-  ls "${ENV_GIT_DIR}/LaunchAgents" | while read -r file
-  do
+  ls "${ENV_GIT_DIR}/LaunchAgents" | while read -r file; do
     link_launch_agent "$file" ""
     launchctl load ~/Library/LaunchAgents/"$file" 2>&1 | while read -r line; do
-        printf "\t\t${YELLOW}> %s${NORMAL}\n" "$line"
-      done
+      printf "\t\t${YELLOW}> %s${NORMAL}\n" "$line"
+    done
   done
 }
 
@@ -95,10 +99,6 @@ set_shell_to_zsh() {
   else
     printf "${GREEN}\tYour current shell is already ${TEST_CURRENT_SHELL}\n${NORMAL}"
   fi
-}
-
-get_user() {
-	echo "${USER/jbagdis/jeff}"
 }
 
 abstract_link() {
@@ -177,13 +177,13 @@ update_check_existing_env() {
 }
 
 install_env_git_do_clone() {
-  env git clone --progress https://github.com/jbagdis/env.git "${ENV_GIT_DIR}" && \
-  pushd "${ENV_GIT_DIR}" && \
-  git remote set-url --push origin git@github.com:jbagdis/env.git && \
-  pushd dot_files && \
-  env git clone --progress https://github.com/ohmyzsh/ohmyzsh.git oh-my-zsh && \
-  popd && \
-  popd
+  env git clone --progress https://github.com/jbagdis/env.git "${ENV_GIT_DIR}" &&
+    pushd "${ENV_GIT_DIR}" &&
+    git remote set-url --push origin git@github.com:jbagdis/env.git &&
+    pushd dot_files &&
+    env git clone --progress https://github.com/ohmyzsh/ohmyzsh.git oh-my-zsh &&
+    popd &&
+    popd
 }
 
 install_env_git() {
@@ -196,11 +196,11 @@ install_env_git() {
   #  as Windows ACLs take precedence over umasks
   #  except for filesystems mounted with option "noacl".
   umask g-w,o-w
-  
+
   printf "${BLUE}Cloning Environment Repository...\n${NORMAL}"
   # The Windows (MSYS) Git is not compatible with normal use on cygwin
   if [ "${OSTYPE}" = cygwin ]; then
-    if git --version | grep msysgit > /dev/null; then
+    if git --version | grep msysgit >/dev/null; then
       printf "${RED}\tError: Windows/MSYS Git is not supported on Cygwin${NORMAL}"
       printf "\tMake sure the Cygwin git package is installed and is first on the path"
       exit 1
@@ -215,14 +215,14 @@ install_env_git() {
 }
 
 update_env_git() {
-    # update the env git repo
-    pushd "${ENV_GIT_DIR}"
-    if [ "$(git rev-parse --abbrev-ref HEAD)" = "main" ]; then
-      git pull
-    else
-      printf "${YELLOW}\tYou are not on the 'main' branch; skipping 'git pull'.\n${NORMAL}"
-    fi
-    popd
+  # update the env git repo
+  pushd "${ENV_GIT_DIR}"
+  if [ "$(git rev-parse --abbrev-ref HEAD)" = "main" ]; then
+    git pull
+  else
+    printf "${YELLOW}\tYou are not on the 'main' branch; skipping 'git pull'.\n${NORMAL}"
+  fi
+  popd
 }
 
 install_or_update_powerlevel_10k() {
@@ -257,7 +257,7 @@ install() {
   create_or_update_links
   install_or_update_powerlevel_10k
   set_shell_to_zsh
-  printf "${BOLD}Shell Environment successfully installed.\n${NORMAL}" 
+  printf "${BOLD}Shell Environment successfully installed.\n${NORMAL}"
   printf "${BLUE}Memoizing new profile...\n${NORMAL}"
   env zsh -l
 }
