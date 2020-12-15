@@ -59,6 +59,9 @@ create_or_update_links() {
   # (re-)link all files from the env git repo into the home directory
   printf "${BLUE}Linking environment components into home directory...\n${NORMAL}"
   link_home_dir bin
+  link_home_dir bin/user
+  mkdir -p "$ENV_GIT_DIR/bin/user"
+  mkdir -p "$ENV_GIT_DIR/bin/local"
   link_dot_file gitconfig
   link_dot_file gitconfig.user
   link_dot_file gitignore_global
@@ -67,9 +70,9 @@ create_or_update_links() {
   link_dot_file profile
   link_dot_file zprofile
   link_dot_file zshrc
-  link_ssh_file authorized_keys "_$(get_user)"
+  link_ssh_file authorized_keys
   link_ssh_file config
-  link_dot_file p10k.zsh "_$(get_user)"
+  link_dot_file p10k.zsh
   link_dot_file "ipython/profile_default/ipython_config.py"
   link_dot_file "tmux.conf"
 

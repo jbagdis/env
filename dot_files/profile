@@ -138,7 +138,7 @@ set_shell() {
 
 set_path() {
   _start "Setting PATH"
-  export PATH="${HOME}/.bin.local:${HOME}/bin:${HOME}/.jenv/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin:/opt/X11/bin:/usr/local/opt/coreutils/libexec/gnubin"
+  export PATH="${HOME}/.bin.local:${HOME}/bin/local:${HOME}/bin/user:${HOME}/bin:${HOME}/.jenv/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin:/opt/X11/bin:/usr/local/opt/coreutils/libexec/gnubin"
   _done
 }
 
