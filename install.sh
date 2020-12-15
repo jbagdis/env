@@ -72,7 +72,9 @@ create_or_update_links() {
   ls "${ENV_GIT_DIR}/LaunchAgents" | while read -r file
   do
     link_launch_agent "$file" ""
-    launchctl load ~/Library/LaunchAgents/"$file"
+    launchctl load ~/Library/LaunchAgents/"$file" 2>&1 | while read -r line; do
+        printf "\t\t${YELLOW}> %s${NORMAL}\n" "$line"
+      done
   done
 }
 
@@ -178,8 +180,9 @@ install_env_git_do_clone() {
   env git clone --progress https://github.com/jbagdis/env.git "${ENV_GIT_DIR}" && \
   pushd "${ENV_GIT_DIR}" && \
   git remote set-url --push origin git@github.com:jbagdis/env.git && \
-  env git submodule init && \
-  env git submodule update && \
+  pushd dot_files && \
+  env git clone --progress https://github.com/ohmyzsh/ohmyzsh.git oh-my-zsh && \
+  popd && \
   popd
 }
 
@@ -203,10 +206,12 @@ install_env_git() {
       exit 1
     fi
   fi
-  (install_env_git_do_clone 2>&1 | awk '{print "\t" $0}') || {
+  echo "${YELLOW}vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"
+  install_env_git_do_clone || {
     printf "${RED}\tError: git clone failed\n${NORMAL}"
     exit 1
   }
+  echo "${YELLOW}^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^${NORMAL}"
 }
 
 update_env_git() {
@@ -220,13 +225,9 @@ update_env_git() {
     popd
 }
 
-install_powerlevel_10k() {
-  # Clone the PowerLevel10k ZSH theme
-  git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "${ENV_GIT_DIR}"/dot_files/oh-my-zsh/custom/themes/powerlevel10k
-}
-
-update_powerlevel10k() {
+install_or_update_powerlevel_10k() {
   # Pull or clone the PowerLevel10k ZSH theme
+  echo "${YELLOW}vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"
   if [ -d "${ENV_GIT_DIR}/dot_files/oh-my-zsh/custom/themes/powerlevel10k" ]; then
     pushd "${ENV_GIT_DIR}/dot_files/oh-my-zsh/custom/themes/powerlevel10k"
     git pull
@@ -234,6 +235,7 @@ update_powerlevel10k() {
   else
     git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "${ENV_GIT_DIR}/dot_files/oh-my-zsh/custom/themes/powerlevel10k"
   fi
+  echo "${YELLOW}^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^${NORMAL}"
 }
 
 update_remove_memoized_profile() {
@@ -253,7 +255,7 @@ install() {
   install_env_git
   create_directories_if_needed
   create_or_update_links
-  install_powerlevel_10k
+  install_or_update_powerlevel_10k
   set_shell_to_zsh
   printf "${BOLD}Shell Environment successfully installed.\n${NORMAL}" 
   printf "${BLUE}Memoizing new profile...\n${NORMAL}"
@@ -269,7 +271,7 @@ update() {
   create_directories_if_needed
   create_or_update_links
   update_remove_memoized_profile
-  update_powerlevel10k
+  install_or_update_powerlevel_10k
   set_shell_to_zsh
   printf "${BOLD}Shell Environment successfully installed.\n${NORMAL}"
   printf "${BLUE}Memoizing new profile... (ignore PowerLevel10k git prompt error.)\n${NORMAL}"
