@@ -1,15 +1,21 @@
-#!/bin/sh
+#!/usr/bin/env bash
 #
 # Adapted from https://github.com/robbyrussell/oh-my-zsh.git
 #
 
+# Variable in printf strings reads more cleanly in some cases
+# shellcheck disable=SC2059
+
+set -euo pipefail
+
 init_colors() {
+  set +u
   # Use colors, but only if connected to a terminal
 	# and only if that terminal supports them.
-  if which tput >/dev/null 2>&1; then
-      ncolors=$(tput colors)
+  if command -v tput >/dev/null 2>&1; then
+      num_colors=$(tput colors)
   fi
-  if [ -t 1 ] && [ -n "$ncolors" ] && [ "$ncolors" -ge 8 ]; then
+  if [ -t 1 ] && [ -n "$num_colors" ] && [ "$num_colors" -ge 8 ]; then
     RED="$(tput setaf 1)"
     GREEN="$(tput setaf 2)"
     YELLOW="$(tput setaf 3)"
@@ -24,13 +30,16 @@ init_colors() {
     BOLD=""
     NORMAL=""
   fi
+  set -u
 }
 
 init_variables() {
 	# set default values
-	if [ ! -n "${ENVGIT}" ]; then
-	  ENVGIT=~/.env.git
+	set +u
+	if [ -z "${ENV_GIT_DIR}" ]; then
+	  ENV_GIT_DIR=~/.env.git
 	fi
+	set -u
 }
 
 create_directories_if_needed() {
@@ -58,8 +67,9 @@ create_or_update_links() {
   link_dot_file p10k.zsh "_$(get_user)"
   link_dot_file "ipython/profile_default/ipython_config.py" ""
   link_dot_file "tmux.conf" ""
-  
-  ls "${ENVGIT}/LaunchAgents" | while read file
+
+  # shellcheck disable=SC2012
+  ls "${ENV_GIT_DIR}/LaunchAgents" | while read -r file
   do
     link_launch_agent "$file" ""
     launchctl load ~/Library/LaunchAgents/"$file"
@@ -74,7 +84,7 @@ set_shell_to_zsh() {
     # If this platform provides a "chsh" command (not Cygwin), do it, man!
     if hash chsh >/dev/null 2>&1; then
       printf "${GREEN}\tChanging your default shell to zsh.\n${NORMAL}"
-      chsh -s $(grep /zsh$ /etc/shells | tail -1)
+      chsh -s "$(grep /zsh$ /etc/shells | tail -1)"
     # Else, suggest the user do so manually.
     else
       printf "${RED}\tCannot change your shell automatically because this system does not have chsh.\n${NORMAL}"
@@ -86,7 +96,7 @@ set_shell_to_zsh() {
 }
 
 get_user() {
-	echo "${USER}" | sed "s/jbagdis/jeff/"
+	echo "${USER/jbagdis/jeff}"
 }
 
 abstract_link() {
@@ -110,8 +120,8 @@ abstract_link() {
     fi
   fi
   printf "${GREEN}\tLinking ${DEST}\n${NORMAL}"
-  ln -sf "${ENVGIT}/${SRC}" ~/"${DEST}"
-  #echo "ln -sf \"${ENVGIT}/${SRC}\" ~/\"${DEST}\""
+  ln -sf "${ENV_GIT_DIR}/${SRC}" ~/"${DEST}"
+  #echo "ln -sf \"${ENV_GIT_DIR}/${SRC}\" ~/\"${DEST}\""
 }
 
 link_dot_file() {
@@ -132,19 +142,21 @@ link_launch_agent() {
 
 install_check_prereqs() {
   printf "${BLUE}Checking prerequisites...\n${NORMAL}"
-  command -v curl >/dev/null 2>&1 && printf "${GREEN}\t'curl' found.\n${NORMAL}" || (printf "${RED}\t'curl' not found.\n${NORMAL}" && exit 1)
-  command -v git >/dev/null 2>&1 && printf "${GREEN}\t'git' found.\n${NORMAL}" || (printf "${RED}\t'git' not found.\n${NORMAL}" && exit 1)
-  command -v zsh >/dev/null 2>&1 && printf "${GREEN}\t'zsh' found.\n${NORMAL}" || (printf "${RED}\t'zsh' not found.\n${NORMAL}" && exit 1) 
+  (command -v curl >/dev/null 2>&1 && printf "${GREEN}\t'curl' found.\n${NORMAL}") || (printf "${RED}\t'curl' not found.\n${NORMAL}" && exit 1)
+  (command -v git >/dev/null 2>&1 && printf "${GREEN}\t'git' found.\n${NORMAL}") || (printf "${RED}\t'git' not found.\n${NORMAL}" && exit 1)
+  (command -v zsh >/dev/null 2>&1 && printf "${GREEN}\t'zsh' found.\n${NORMAL}") || (printf "${RED}\t'zsh' not found.\n${NORMAL}" && exit 1)
 }
 
 install_check_existing_env() {
   printf "${BLUE}Checking for previously-installed environment...\n${NORMAL}"
-  if [ ! -n "${ENVGIT}" ]; then
-    ENVGIT=~/.env.git
+  set +u
+  if [ -z "${ENV_GIT_DIR}" ]; then
+    ENV_GIT_DIR=~/.env.git
   fi
-  if [ -d "${ENVGIT}" ]; then
+  set -u
+  if [ -d "${ENV_GIT_DIR}" ]; then
     printf "${YELLOW}\tYou already have an environment installed.\n${NORMAL}"
-    printf "\tYou'll need to remove ${ENVGIT} if you want to re-install.\n"
+    printf "\tYou'll need to remove ${ENV_GIT_DIR} if you want to re-install.\n"
     exit 1
   else
     printf "${GREEN}\tNone found.\n${NORMAL}"
@@ -153,8 +165,8 @@ install_check_existing_env() {
 
 update_check_existing_env() {
   printf "${BLUE}Checking for previously-installed environment...\n${NORMAL}"
-  if [ -d "${ENVGIT}" ]; then
-    printf "${GREEN}\tFound at '${ENVGIT}'.\n${NORMAL}"
+  if [ -d "${ENV_GIT_DIR}" ]; then
+    printf "${GREEN}\tFound at '${ENV_GIT_DIR}'.\n${NORMAL}"
   else
     printf "${YELLOW}\tYou do not have an environment installed.\n${NORMAL}"
     printf "\tYou'll need to install one first before you can update.\n"
@@ -163,10 +175,11 @@ update_check_existing_env() {
 }
 
 install_env_git_do_clone() {
-  env git clone --progress https://github.com/jbagdis/env.git "${ENVGIT}"
-  pushd "${ENVGIT}"
-  env git submodule init
-  env git submodule update
+  env git clone --progress https://github.com/jbagdis/env.git "${ENV_GIT_DIR}" && \
+  pushd "${ENV_GIT_DIR}" && \
+  git remote set-url --push origin git@github.com:jbagdis/env.git && \
+  env git submodule init && \
+  env git submodule update && \
   popd
 }
 
@@ -185,12 +198,12 @@ install_env_git() {
   # The Windows (MSYS) Git is not compatible with normal use on cygwin
   if [ "${OSTYPE}" = cygwin ]; then
     if git --version | grep msysgit > /dev/null; then
-      echo "${RED}\tError: Windows/MSYS Git is not supported on Cygwin${NORMAL}"
-      echo "\tMake sure the Cygwin git package is installed and is first on the path"
+      printf "${RED}\tError: Windows/MSYS Git is not supported on Cygwin${NORMAL}"
+      printf "\tMake sure the Cygwin git package is installed and is first on the path"
       exit 1
     fi
   fi
-  install_env_git_do_clone 2>&1 | sed 's/^/\'$'\t/' || {
+  (install_env_git_do_clone 2>&1 | awk '{print "\t" $0}') || {
     printf "${RED}\tError: git clone failed\n${NORMAL}"
     exit 1
   }
@@ -198,28 +211,28 @@ install_env_git() {
 
 update_env_git() {
     # update the env git repo
-    pushd "${ENVGIT}"
+    pushd "${ENV_GIT_DIR}"
     if [ "$(git rev-parse --abbrev-ref HEAD)" = "main" ]; then
       git pull
     else
-      echo "${YELLOW}\tYou are not on the 'main' branch; skipping 'git pull'.\n${NORMAL}"
+      printf "${YELLOW}\tYou are not on the 'main' branch; skipping 'git pull'.\n${NORMAL}"
     fi
     popd
 }
 
 install_powerlevel_10k() {
   # Clone the PowerLevel10k ZSH theme
-  git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "${ENVGIT}"/dot_files/oh-my-zsh/custom/themes/powerlevel10k  
+  git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "${ENV_GIT_DIR}"/dot_files/oh-my-zsh/custom/themes/powerlevel10k
 }
 
 update_powerlevel10k() {
   # Pull or clone the PowerLevel10k ZSH theme
-  if [ -d "${ENVGIT}/dot_files/oh-my-zsh/custom/themes/powerlevel10k" ]; then
-    pushd "${ENVGIT}/dot_files/oh-my-zsh/custom/themes/powerlevel10k"
+  if [ -d "${ENV_GIT_DIR}/dot_files/oh-my-zsh/custom/themes/powerlevel10k" ]; then
+    pushd "${ENV_GIT_DIR}/dot_files/oh-my-zsh/custom/themes/powerlevel10k"
     git pull
     popd
   else
-    git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "${ENVGIT}/dot_files/oh-my-zsh/custom/themes/powerlevel10k"
+    git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "${ENV_GIT_DIR}/dot_files/oh-my-zsh/custom/themes/powerlevel10k"
   fi
 }
 
@@ -234,7 +247,6 @@ update_remove_memoized_profile() {
 install() {
   init_colors
   init_variables
-  set -eou pipefail
   printf "${BOLD}Installing Shell Environment.\n${NORMAL}"
   install_check_prereqs
   install_check_existing_env
@@ -251,7 +263,6 @@ install() {
 update() {
   init_colors
   init_variables
-  set -eou pipefail
   printf "${BOLD}Updating Shell Environment.\n${NORMAL}"
   update_check_existing_env
   update_env_git
