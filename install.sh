@@ -200,6 +200,8 @@ install_env_git() {
     printf "${RED}\tError: git clone failed\n${NORMAL}"
     exit 1
   }
+  # Set the git 'push' remote for origin to use SSH
+  git remote set-url --push origin git@github.com:jbagdis/env.git
 }
 
 update_env_git() {
