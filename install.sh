@@ -60,6 +60,8 @@ create_or_update_links() {
   printf "${BLUE}Linking environment components into home directory...\n${NORMAL}"
   link_home_dir bin
   link_home_dir bin/user
+  mkdir -p "$ENV_GIT_DIR/bin/user"
+  mkdir -p "$ENV_GIT_DIR/bin/local"
   link_dot_file gitconfig
   link_dot_file gitconfig.user
   link_dot_file gitignore_global
