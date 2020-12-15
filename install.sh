@@ -9,6 +9,7 @@
 set -euo pipefail
 
 init_colors() {
+  set +u
   # Use colors, but only if connected to a terminal
 	# and only if that terminal supports them.
   if command -v tput >/dev/null 2>&1; then
@@ -29,13 +30,16 @@ init_colors() {
     BOLD=""
     NORMAL=""
   fi
+  set -u
 }
 
 init_variables() {
 	# set default values
+	set +u
 	if [ -z "${ENV_GIT_DIR}" ]; then
 	  ENV_GIT_DIR=~/.env.git
 	fi
+	set -u
 }
 
 create_directories_if_needed() {
@@ -145,9 +149,11 @@ install_check_prereqs() {
 
 install_check_existing_env() {
   printf "${BLUE}Checking for previously-installed environment...\n${NORMAL}"
+  set +u
   if [ -z "${ENV_GIT_DIR}" ]; then
     ENV_GIT_DIR=~/.env.git
   fi
+  set -u
   if [ -d "${ENV_GIT_DIR}" ]; then
     printf "${YELLOW}\tYou already have an environment installed.\n${NORMAL}"
     printf "\tYou'll need to remove ${ENV_GIT_DIR} if you want to re-install.\n"
@@ -169,10 +175,11 @@ update_check_existing_env() {
 }
 
 install_env_git_do_clone() {
-  env git clone --progress https://github.com/jbagdis/env.git "${ENV_GIT_DIR}"
-  pushd "${ENV_GIT_DIR}"
-  env git submodule init
-  env git submodule update
+  env git clone --progress https://github.com/jbagdis/env.git "${ENV_GIT_DIR}" && \
+  pushd "${ENV_GIT_DIR}" && \
+  git remote set-url --push origin git@github.com:jbagdis/env.git && \
+  env git submodule init && \
+  env git submodule update && \
   popd
 }
 
@@ -196,12 +203,10 @@ install_env_git() {
       exit 1
     fi
   fi
-  install_env_git_do_clone 2>&1 | sed "s/^/'\$'\t/" || {
+  (install_env_git_do_clone 2>&1 | awk '{print "\t" $0}') || {
     printf "${RED}\tError: git clone failed\n${NORMAL}"
     exit 1
   }
-  # Set the git 'push' remote for origin to use SSH
-  git remote set-url --push origin git@github.com:jbagdis/env.git
 }
 
 update_env_git() {
@@ -242,7 +247,6 @@ update_remove_memoized_profile() {
 install() {
   init_colors
   init_variables
-  set -eou pipefail
   printf "${BOLD}Installing Shell Environment.\n${NORMAL}"
   install_check_prereqs
   install_check_existing_env
@@ -259,7 +263,6 @@ install() {
 update() {
   init_colors
   init_variables
-  set -eou pipefail
   printf "${BOLD}Updating Shell Environment.\n${NORMAL}"
   update_check_existing_env
   update_env_git
