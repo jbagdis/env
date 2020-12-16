@@ -59,9 +59,8 @@ create_or_update_links() {
   # (re-)link all files from the env git repo into the home directory
   printf "${BLUE}Linking environment components into home directory...\n${NORMAL}"
   link_home_dir bin
-  mkdir -p "${HOME}/bin/user"
-  mkdir -p "${HOME}/bin/local"
   link_home_dir bin/user
+  mkdir -p "${HOME}/bin/local"
   link_dot_file gitconfig
   link_dot_file gitconfig.user
   link_dot_file gitignore_global
@@ -106,16 +105,17 @@ set_shell_to_zsh() {
 
 abstract_link() {
   # get the input arguments
-  # (the fourth argument (source suffix) is optional)
+  # (the fifth argument (source suffix) is optional)
   set +u
-  SRC_SUFFIX="$4"
+  SRC_SUFFIX="$5"
   if [ -z "${SRC_SUFFIX}" ]; then
     SRC_SUFFIX=""
   fi
   set -u
-  SRC_PREFIX="$1"
-  DEST_PREFIX="$2"
-  FILE="$3"
+  TYPE="$1"
+  SRC_PREFIX="$2"
+  DEST_PREFIX="$3"
+  FILE="$4"
   SRC="${SRC_PREFIX}${FILE}${SRC_SUFFIX}"
   USER_SRC="users/$(get_user)/${SRC_PREFIX}${FILE//\//-}${SRC_SUFFIX}"
   DEST="${DEST_PREFIX}${FILE}"
@@ -126,7 +126,13 @@ abstract_link() {
   # ensure that the source exists before trying to link
   if [ ! -e "${ENV_GIT_DIR}/${SRC}" ]; then
     printf "\t${YELLOW}Not linking '${DEST}' because '${SRC}' does not exist.${NORMAL}\n"
-    touch ~/"${DEST}"
+    if [ "${TYPE}" == "file" ]; then
+      touch ~/"${DEST}"
+    elif [ "${TYPE}" == "dir" ]; then
+      mkdir -p ~/"${DEST}"
+    else
+      printf "\t${RED}Unknown type '${TYPE}'.${NORMAL}\n"
+    fi
   else
     if [ -L ~/"${DEST}" ]; then
       # file is a link; don't bother backing up
@@ -148,25 +154,25 @@ abstract_link() {
 
 link_dot_file() {
   set +u
-  abstract_link "dot_files/" "." "$1" "$2"
+  abstract_link "file" "dot_files/" "." "$1" "$2"
   set -u
 }
 
 link_home_dir() {
   set +u
-  abstract_link "home_dirs/" "" "$1" "$2"
+  abstract_link "dir" "home_dirs/" "" "$1" "$2"
   set -u
 }
 
 link_ssh_file() {
   set +u
-  abstract_link "ssh/" ".ssh/" "$1" "$2"
+  abstract_link "file" "ssh/" ".ssh/" "$1" "$2"
   set -u
 }
 
 link_launch_agent() {
   set +u
-  abstract_link "LaunchAgents/" "Library/LaunchAgents/" "$1" "$2"
+  abstract_link "file" "LaunchAgents/" "Library/LaunchAgents/" "$1" "$2"
   set -u
 }
 
