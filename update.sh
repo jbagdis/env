@@ -1,4 +1,4 @@
 #!/bin/sh
 
-source install.sh
+. install.sh
 update
