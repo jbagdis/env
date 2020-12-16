@@ -5,5 +5,5 @@ set -euo pipefail
 CWD="$(pwd)"
 
 # move to the ENV_GIT root directory
-cd -P /Users/jeff/bin/../..
+cd -P "$0:a:h"/../..
 ./update.sh
