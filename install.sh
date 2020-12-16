@@ -78,6 +78,11 @@ create_or_update_links() {
   # shellcheck disable=SC2012
   ls "${ENV_GIT_DIR}/LaunchAgents" | while read -r file; do
     link_launch_agent "$file"
+    if launchctl list "${file/.plist/}" >/dev/null 2>&1; then
+      launchctl unload ~/Library/LaunchAgents/"$file" 2>&1 | while read -r line; do
+        printf "\t\t${YELLOW}> %s${NORMAL}\n" "$line"
+      done
+    fi
     launchctl load ~/Library/LaunchAgents/"$file" 2>&1 | while read -r line; do
       printf "\t\t${YELLOW}> %s${NORMAL}\n" "$line"
     done
