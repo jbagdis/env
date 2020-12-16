@@ -62,6 +62,9 @@ create_directories_if_needed() {
 
   # Ensure ipython configuration directory exists
   mkdir -p ~/.ipython/profile_default
+
+  # Ensure user's LaunchAgents directory exists
+  mkdir -p ~/Library/LaunchAgents
 }
 
 create_or_update_links() {
