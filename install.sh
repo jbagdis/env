@@ -275,7 +275,12 @@ update_env_git() {
 install_or_update_oh_my_zsh() {
   umask g-w,o-w
   # Pull or clone Oh-My-ZSH
-  if [ -d "${ENV_GIT_DIR}/dot_files/oh-my-zsh" ]; then
+  if [ -e ~/.oh-my-zsh/tools/upgrade.sh ]; then
+    printf "${BLUE}Updating Oh-My-ZSH Repository...\n${NORMAL}"
+    echo "${YELLOW}vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"
+    ~/.oh-my-zsh/tools/upgrade.sh || true
+    echo "${YELLOW}^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^${NORMAL}"
+  elif [ -d "${ENV_GIT_DIR}/dot_files/oh-my-zsh" ]; then
     printf "${BLUE}Updating Oh-My-ZSH Repository...\n${NORMAL}"
     echo "${YELLOW}vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"
     pushd "${ENV_GIT_DIR}/dot_files/oh-my-zsh"
