@@ -215,16 +215,6 @@ update_check_existing_env() {
   fi
 }
 
-install_env_git_do_clone() {
-  env git clone --progress https://github.com/jbagdis/env.git "${ENV_GIT_DIR}" &&
-    pushd "${ENV_GIT_DIR}" &&
-    git remote set-url --push origin git@github.com:jbagdis/env.git &&
-    pushd dot_files &&
-    env git clone --progress https://github.com/ohmyzsh/ohmyzsh.git oh-my-zsh &&
-    popd &&
-    popd
-}
-
 install_env_git() {
   # Prevent the cloned repository from having insecure permissions.
   #  Failing to do so causes compinit() calls to fail
@@ -246,35 +236,63 @@ install_env_git() {
     fi
   fi
   echo "${YELLOW}vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"
-  install_env_git_do_clone || {
-    printf "${RED}\tError: git clone failed\n${NORMAL}"
-    exit 1
-  }
+    env git clone --progress https://github.com/jbagdis/env.git "${ENV_GIT_DIR}" || {
+      printf "${RED}\tError: git clone failed\n${NORMAL}"
+      exit 1
+    }
+    pushd "${ENV_GIT_DIR}" >/dev/null
+    git remote set-url --push origin git@github.com:jbagdis/env.git
+    popd >/dev/null
   echo "${YELLOW}^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^${NORMAL}"
 }
 
 update_env_git() {
+  umask g-w,o-w
   # update the env git repo
   pushd "${ENV_GIT_DIR}"
   if [ "$(git rev-parse --abbrev-ref HEAD)" = "main" ]; then
-    git pull
+    env git pull
   else
     printf "${YELLOW}\tYou are not on the 'main' branch; skipping 'git pull'.\n${NORMAL}"
   fi
   popd
 }
 
+install_or_update_oh_my_zsh() {
+  umask g-w,o-w
+  # Pull or clone Oh-My-ZSH
+  if [ -d "${ENV_GIT_DIR}/dot_files/oh-my-zsh" ]; then
+    printf "${BLUE}Updating Oh-My-ZSH Repository...\n${NORMAL}"
+    echo "${YELLOW}vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"
+    pushd "${ENV_GIT_DIR}/dot_files/oh-my-zsh"
+    env git pull --progress
+    popd
+    echo "${YELLOW}^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^${NORMAL}"
+  else
+    printf "${BLUE}Cloning Oh-My-ZSH Repository...\n${NORMAL}"
+    echo "${YELLOW}vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"
+    env git clone --progress https://github.com/ohmyzsh/ohmyzsh.git "${ENV_GIT_DIR}/dot_files/oh-my-zsh"
+    echo "${YELLOW}^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^${NORMAL}"
+  fi
+}
+
 install_or_update_powerlevel_10k() {
+  umask g-w,o-w
   # Pull or clone the PowerLevel10k ZSH theme
   echo "${YELLOW}vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"
   if [ -d "${ENV_GIT_DIR}/dot_files/oh-my-zsh/custom/themes/powerlevel10k" ]; then
+    printf "${BLUE}Updating PowerLevel10k Repository...\n${NORMAL}"
+    echo "${YELLOW}vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"
     pushd "${ENV_GIT_DIR}/dot_files/oh-my-zsh/custom/themes/powerlevel10k"
-    git pull
+    env git pull
     popd
+    echo "${YELLOW}^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^${NORMAL}"
   else
-    git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "${ENV_GIT_DIR}/dot_files/oh-my-zsh/custom/themes/powerlevel10k"
+    printf "${BLUE}Cloning PowerLevel10k Repository...\n${NORMAL}"
+    echo "${YELLOW}vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"
+    env git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "${ENV_GIT_DIR}/dot_files/oh-my-zsh/custom/themes/powerlevel10k"
+    echo "${YELLOW}^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^${NORMAL}"
   fi
-  echo "${YELLOW}^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^${NORMAL}"
 }
 
 update_remove_memoized_profile() {
@@ -292,6 +310,7 @@ install() {
   install_check_prereqs
   install_check_existing_env
   install_env_git
+  install_or_update_oh_my_zsh
   create_directories_if_needed
   create_or_update_links
   install_or_update_powerlevel_10k
@@ -307,6 +326,7 @@ update() {
   printf "${BOLD}Updating Shell Environment.\n${NORMAL}"
   update_check_existing_env
   update_env_git
+  install_or_update_oh_my_zsh
   create_directories_if_needed
   create_or_update_links
   update_remove_memoized_profile
