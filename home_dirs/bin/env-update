@@ -1,0 +1,8 @@
+#!/usr/bin/env zsh
+
+set -euo pipefail
+
+ENV_GIT_DIR=$0:a:h:h:h
+pushd "${ENV_GIT_DIR}"
+"${ENV_GIT_DIR}/update.sh"
+popd
