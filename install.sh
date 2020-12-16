@@ -13,6 +13,15 @@ get_user() {
 	echo "${USER/jbagdis/jeff}"
 }
 
+get_cwd() {
+  # remember the current working directory
+  set +u
+  if [ -z "${CWD}" ]; then
+    CWD="$(pwd)"
+  fi
+  set -u
+}
+
 init_colors() {
   set +u
   # Use colors, but only if connected to a terminal
@@ -249,13 +258,18 @@ install_env_git() {
 update_env_git() {
   umask g-w,o-w
   # update the env git repo
+  printf "${BLUE}Updating Environment Repository...\n${NORMAL}"
+  echo "${YELLOW}vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"
   pushd "${ENV_GIT_DIR}"
-  if [ "$(git rev-parse --abbrev-ref HEAD)" = "main" ]; then
+  if [ $(git status --porcelain | wc -l 2>/dev/null) != "0" ]; then
+    printf "${YELLOW}\tYour working copy is dirty; skipping 'git pull'.\n${NORMAL}"
+  elif [ "$(git rev-parse --abbrev-ref HEAD)" = "main" ]; then
     env git pull
   else
     printf "${YELLOW}\tYou are not on the 'main' branch; skipping 'git pull'.\n${NORMAL}"
   fi
   popd
+  echo "${YELLOW}^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^${NORMAL}"
 }
 
 install_or_update_oh_my_zsh() {
@@ -304,6 +318,7 @@ update_remove_memoized_profile() {
 }
 
 install() {
+  get_cwd
   init_colors
   init_variables
   printf "${BOLD}Installing Shell Environment.\n${NORMAL}"
@@ -314,6 +329,7 @@ install() {
   create_directories_if_needed
   create_or_update_links
   install_or_update_powerlevel_10k
+  cd "${CWD}"
   set_shell_to_zsh
   printf "${BOLD}Shell Environment successfully installed.\n${NORMAL}"
   printf "${BLUE}Memoizing new profile...\n${NORMAL}"
@@ -321,6 +337,7 @@ install() {
 }
 
 update() {
+  get_cwd
   init_colors
   init_variables
   printf "${BOLD}Updating Shell Environment.\n${NORMAL}"
@@ -331,6 +348,7 @@ update() {
   create_or_update_links
   update_remove_memoized_profile
   install_or_update_powerlevel_10k
+  cd "${CWD}"
   set_shell_to_zsh
   printf "${BOLD}Shell Environment successfully installed.\n${NORMAL}"
   printf "${BLUE}Memoizing new profile... (ignore PowerLevel10k git prompt error.)\n${NORMAL}"
