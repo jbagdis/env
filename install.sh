@@ -117,7 +117,7 @@ abstract_link() {
   DEST_PREFIX="$2"
   FILE="$3"
   SRC="${SRC_PREFIX}${FILE}${SRC_SUFFIX}"
-  USER_SRC="users/$(get_user)/${SRC_PREFIX}${FILE}${SRC_SUFFIX}"
+  USER_SRC="users/$(get_user)/${SRC_PREFIX}${FILE//\//-}${SRC_SUFFIX}"
   DEST="${DEST_PREFIX}${FILE}"
   # use the user-specific source if it exists
   if [ -e "${ENV_GIT_DIR}/${USER_SRC}" ]; then
