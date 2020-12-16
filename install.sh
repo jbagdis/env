@@ -87,18 +87,20 @@ create_or_update_links() {
   link_dot_file "ipython/profile_default/ipython_config.py"
   link_dot_file "tmux.conf"
 
+  set +o pipefail
   # shellcheck disable=SC2012
   ls "${ENV_GIT_DIR}/LaunchAgents" | while read -r file; do
     link_launch_agent "$file"
     if launchctl list "${file/.plist/}" >/dev/null 2>&1; then
-      launchctl unload ~/Library/LaunchAgents/"$file" 2>&1 || true | while read -r line; do
+      launchctl unload ~/Library/LaunchAgents/"$file" 2>&1 | while read -r line; do
         printf "\t\t${YELLOW}> %s${NORMAL}\n" "$line"
       done
     fi
-    launchctl load ~/Library/LaunchAgents/"$file" 2>&1 || true | while read -r line; do
+    launchctl load ~/Library/LaunchAgents/"$file" 2>&1 | while read -r line; do
       printf "\t\t${YELLOW}> %s${NORMAL}\n" "$line"
     done
   done
+  set -o pipefail
 }
 
 set_shell_to_zsh() {
