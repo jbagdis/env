@@ -2,7 +2,6 @@
 
 set -euo pipefail
 
-ENV_GIT_DIR=$0:a:h:h:h
-pushd "${ENV_GIT_DIR}"
-"${ENV_GIT_DIR}/update.sh"
-popd
+# move to the ENV_GIT root directory
+cd -P /Users/jeff/bin/../..
+./update.sh
