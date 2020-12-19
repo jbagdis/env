@@ -221,12 +221,12 @@ setup_node() {
 
 setup_ruby() {
     _start "Initializing Ruby Environment"
-    if command -v rbenv >/dev/null 2>&1; then
-        # tell ruby-build to use Homebrew's OpenSSL
-        export RUBY_CONFIGURE_OPTS="--with-openssl-dir=$(brew --prefix openssl@1.1)"
+    if [[ -e "/usr/local/opt/chruby/share/chruby/chruby.sh" ]] && [[ -e "/usr/local/opt/chruby/share/chruby/auto.sh" ]]; then
+       source /usr/local/opt/chruby/share/chruby/chruby.sh
+       source /usr/local/opt/chruby/share/chruby/auto.sh
        _done
     else
-        _fail "'rbenv' is not installed"
+        _fail "'chruby' is not installed"
     fi
 }
 
