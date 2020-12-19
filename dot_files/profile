@@ -138,7 +138,7 @@ set_shell() {
 
 set_path() {
   _start "Setting PATH"
-  export PATH="${HOME}/.bin.local:${HOME}/bin/local:${HOME}/bin/user:${HOME}/bin:${HOME}/.jenv/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin:/opt/X11/bin:/usr/local/opt/coreutils/libexec/gnubin"
+  export PATH="${HOME}/bin/local:${HOME}/bin/user:${HOME}/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin:/opt/X11/bin:/usr/local/opt/coreutils/libexec/gnubin"
   _done
 }
 
@@ -193,9 +193,6 @@ setup_python() {
     else
       _fail "'pyenv virtualenv' is not installed"
     fi
-    #export WORKON_HOME=~/.virtualenv
-    #source /usr/local/bin/virtualenvwrapper.sh
-    #export NLTK_DATA="${HOME}/var/nltk_data"
   else
     _fail "'pyenv' is not installed"
   fi
@@ -259,18 +256,17 @@ init_colors
 set_path
 set_aliases
 set_umask
-save_env_snapshop
+# save_env_snapshop
 setup_thefuck
-setup_ruby
-initialize_memoizable_profile() {
+# initialize_memoizable_profile() {
   setup_misc_env
   setup_java
   setup_python
   setup_node
+  setup_ruby
   include_local_profile_customizations
-}
-load_memoized_profile || initialize_memoizable_profile
-save_memoized_profile
+# }
+# load_memoized_profile || initialize_memoizable_profile
+# save_memoized_profile
 
 _msg ""
-
