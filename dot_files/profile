@@ -224,12 +224,12 @@ setup_node() {
 
 setup_ruby() {
     _start "Initializing Ruby Environment"
-    if [[ -e "/usr/local/opt/chruby/share/chruby/chruby.sh" ]] && [[ -e "/usr/local/opt/chruby/share/chruby/auto.sh" ]]; then
-       source /usr/local/opt/chruby/share/chruby/chruby.sh
-       source /usr/local/opt/chruby/share/chruby/auto.sh
+    if command -v rbenv >/dev/null 2>&1; then
+        # tell ruby-build to use Homebrew's OpenSSL
+        export RUBY_CONFIGURE_OPTS="--with-openssl-dir=$(brew --prefix openssl@1.1)"
        _done
     else
-        _fail "'chruby' is not installed"
+        _fail "'rbenv' is not installed"
     fi
 }
 
@@ -261,12 +261,12 @@ set_aliases
 set_umask
 save_env_snapshop
 setup_thefuck
-setup_ruby
 initialize_memoizable_profile() {
   setup_misc_env
   setup_java
   setup_python
   setup_node
+  setup_ruby
   include_local_profile_customizations
 }
 load_memoized_profile || initialize_memoizable_profile
