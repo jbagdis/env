@@ -11,9 +11,9 @@
   lgf = log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold cyan)%aD%C(reset) %C(bold green)(%ar)%C(reset)%C(bold yellow)%d%C(reset)%n''          %C(white)%s%C(reset) %C(dim white)- %an%C(reset)' --full-history --no-merges --
   
 [core]
-  excludesfile = ~/.gitignore_global
   commitGraph = true
   editor = mate -w
+  excludesfile = ~/.gitignore_global
 
 [diff]
   tool = meld
