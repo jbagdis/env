@@ -263,7 +263,7 @@ setup_thefuck
   setup_java
   setup_python
   setup_node
-  setup_ruby
+  # setup_ruby
   include_local_profile_customizations
 # }
 # load_memoized_profile || initialize_memoizable_profile
