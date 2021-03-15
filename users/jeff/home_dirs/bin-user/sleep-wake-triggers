@@ -11,7 +11,7 @@ case "$(whoami)" in
     WORKDAY=$(((${NOW_HOUR} >= ${START_HOUR})) && ((${NOW_HOUR} < ${END_HOUR})) && echo "yes" || echo "no")
     case "${WORKDAY}" in
       ("yes")
-        caffeinate -u -t 1
+        # caffeinate -u -t 1
         ;;
       ("no")
         # ...
